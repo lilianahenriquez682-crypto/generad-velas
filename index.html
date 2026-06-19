@@ -1,181 +1,796 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import random
-import time
-import string
-
-class EncuestaAutomatizada:
-    def __init__(self, url, veces=1):
-        self.url = url
-        self.veces = veces
-        self.opciones = {
-            'nombres': ['Ana', 'Carlos', 'María', 'José', 'Laura', 'Pedro', 'Sofía', 'Luis'],
-            'apellidos': ['García', 'Martínez', 'López', 'Rodríguez', 'Fernández', 'González'],
-            'edades': list(range(18, 65)),
-            'generos': ['Masculino', 'Femenino', 'Otro'],
-            'satisfaccion': ['Muy satisfecho', 'Satisfecho', 'Neutral', 'Insatisfecho', 'Muy insatisfecho'],
-            'frecuencia': ['Diario', 'Semanal', 'Mensual', 'Raramente', 'Nunca'],
-            'si_no': ['Sí', 'No'],
-            'numeros': list(range(1, 11))
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatizador de Encuestas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        self.driver = None
-    
-    def generar_respuesta(self, tipo_pregunta):
-        """Genera respuestas coherentes según el tipo de pregunta"""
-        if tipo_pregunta in ['text', 'email', 'textarea']:
-            return self._generar_texto_aleatorio(tipo_pregunta)
-        elif tipo_pregunta == 'radio':
-            return random.choice(self.opciones['satisfaccion'])
-        elif tipo_pregunta == 'checkbox':
-            return random.sample(self.opciones['si_no'], random.randint(1, 2))
-        elif tipo_pregunta == 'select':
-            return random.choice(self.opciones['frecuencia'])
-        elif tipo_pregunta == 'number':
-            return str(random.choice(self.opciones['numeros']))
-        elif tipo_pregunta == 'date':
-            return f"{random.randint(1, 28)}/{random.randint(1, 12)}/{random.randint(2000, 2024)}"
-        else:
-            return "Respuesta coherente"
 
-    def _generar_texto_aleatorio(self, tipo):
-        """Genera texto coherente según el campo"""
-        if tipo == 'email':
-            nombre = random.choice(self.opciones['nombres']).lower()
-            apellido = random.choice(self.opciones['apellidos']).lower()
-            dominio = random.choice(['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'])
-            return f"{nombre}.{apellido}{random.randint(10, 99)}@{dominio}"
-        elif tipo == 'text' or tipo == 'textarea':
-            opciones_texto = [
-                "Excelente servicio, muy recomendable",
-                "Buena experiencia, volvería a usar el servicio",
-                "Regular, esperaba más de la atención",
-                "Mala experiencia, no lo recomiendo",
-                "El producto cumple con lo esperado",
-                "Necesita mejorar en algunos aspectos",
-                "Muy satisfecho con el resultado",
-                "Podría ser mejor, pero cumple su función"
-            ]
-            return random.choice(opciones_texto)
-        return "Respuesta estándar"
+        body {
+            background: #0a0e27;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-    def identificar_tipo_pregunta(self, elemento):
-        """Identifica el tipo de campo de formulario"""
-        tag = elemento.tag_name.lower()
-        tipo = elemento.get_attribute('type')
-        
-        if tag == 'input':
-            if tipo == 'text' or tipo is None:
-                return 'text'
-            elif tipo == 'email':
-                return 'email'
-            elif tipo == 'number':
-                return 'number'
-            elif tipo == 'radio':
-                return 'radio'
-            elif tipo == 'checkbox':
-                return 'checkbox'
-            elif tipo == 'date':
-                return 'date'
-        elif tag == 'textarea':
-            return 'textarea'
-        elif tag == 'select':
-            return 'select'
-        return 'text'
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: white;
+        }
 
-    def llenar_formulario(self):
-        """Llena un formulario completo con respuestas coherentes"""
-        # Esperar que cargue la página
-        wait = WebDriverWait(self.driver, 10)
-        
-        # Encontrar todos los campos del formulario
-        campos = self.driver.find_elements(By.CSS_SELECTOR, 'input, textarea, select')
-        
-        for campo in campos:
-            try:
-                if not campo.is_displayed() or not campo.is_enabled():
-                    continue
-                
-                # Saltar botones de envío
-                if campo.get_attribute('type') in ['submit', 'button', 'reset', 'hidden']:
-                    continue
-                
-                tipo = self.identificar_tipo_pregunta(campo)
-                
-                if tipo == 'radio':
-                    # Seleccionar una opción aleatoria del mismo grupo
-                    name = campo.get_attribute('name')
-                    if name:
-                        opciones = self.driver.find_elements(By.CSS_SELECTOR, f'input[name="{name}"]')
-                        if opciones:
-                            random.choice(opciones).click()
-                elif tipo == 'checkbox':
-                    if random.random() > 0.5:  # 50% probabilidad de marcar
-                        campo.click()
-                elif tipo == 'select':
-                    opciones = campo.find_elements(By.TAG_NAME, 'option')
-                    if len(opciones) > 1:
-                        random.choice(opciones[1:]).click()  # Saltar la primera opción (placeholder)
-                else:
-                    # Campos de texto, email, textarea
-                    respuesta = self.generar_respuesta(tipo)
-                    campo.clear()
-                    campo.send_keys(respuesta)
-                
-                time.sleep(random.uniform(0.1, 0.3))  # Simular comportamiento humano
-                
-            except Exception as e:
-                print(f"Error al llenar campo: {e}")
-                continue
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
 
-    def enviar_formulario(self):
-        """Envía el formulario"""
-        try:
-            botones = self.driver.find_elements(By.CSS_SELECTOR, 
-                'input[type="submit"], button[type="submit"], button:has-text("Enviar")')
-            
-            if botones:
-                botones[0].click()
-                print("✅ Formulario enviado correctamente")
-            else:
-                print("⚠️ No se encontró botón de envío")
-                
-        except Exception as e:
-            print(f"❌ Error al enviar: {e}")
+        .header p {
+            opacity: 0.9;
+        }
 
-    def ejecutar(self):
-        """Ejecuta el proceso completo las veces indicadas"""
-        for i in range(self.veces):
-            try:
-                print(f"\n🔄 Ejecutando encuesta {i+1}/{self.veces}")
-                
-                # Iniciar navegador
-                self.driver = webdriver.Chrome()  # Asegúrate de tener ChromeDriver instalado
-                self.driver.get(self.url)
-                time.sleep(2)  # Esperar carga inicial
-                
-                self.llenar_formulario()
-                self.enviar_formulario()
-                
-                # Esperar confirmación
-                time.sleep(3)
-                
-            except Exception as e:
-                print(f"❌ Error en ejecución {i+1}: {e}")
-            finally:
-                if self.driver:
-                    self.driver.quit()
-                    time.sleep(1)
-        
-        print(f"\n✅ Proceso completado. {self.veces} encuestas realizadas.")
+        .controls {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
 
-# ========== CONFIGURACIÓN ==========
-# Cambia estos valores según necesites
-URL_ENCUESTA = "https://tu-encuesta.com"  # <-- Pon aquí el link
-NUMERO_VECES = 5  # <-- Cuántas veces quieres ejecutarla
+        .controls input[type="text"] {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 18px;
+            border: 2px solid #2a2f4a;
+            border-radius: 10px;
+            background: #0d1128;
+            color: white;
+            font-size: 1em;
+        }
 
-# Ejecutar
-if __name__ == "__main__":
-    automator = EncuestaAutomatizada(URL_ENCUESTA, NUMERO_VECES)
-    automator.ejecutar()
+        .controls input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls input[type="number"] {
+            width: 80px;
+            padding: 12px;
+            border: 2px solid #2a2f4a;
+            border-radius: 10px;
+            background: #0d1128;
+            color: white;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .controls label {
+            color: #a0aec0;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #fc8181;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #f56565;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f6ad55;
+            color: #1a1f3a;
+        }
+
+        .btn-warning:hover {
+            background: #ed8936;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-bar {
+            background: #1a1f3a;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #a0aec0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-bar .status-text {
+            color: #48bb78;
+            font-weight: 600;
+        }
+
+        .status-bar .counter {
+            background: #0d1128;
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .frame-container {
+            background: #1a1f3a;
+            border-radius: 15px;
+            padding: 10px;
+            height: 80vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .frame-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .frame-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9em;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+        }
+
+        .loading .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #2a2f4a;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #2a2f4a;
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            .controls input[type="text"] {
+                width: 100%;
+            }
+            .frame-container {
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🤖 Automatizador de Encuestas</h1>
+        <p>Ingresa el link de tu encuesta y el sistema la rellenará automáticamente</p>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="urlEncuesta" placeholder="https://ejemplo.com/encuesta" value="https://forms.gle/tu-link">
+        <label>Veces:</label>
+        <input type="number" id="numVeces" value="3" min="1" max="50">
+        <button class="btn btn-primary" onclick="iniciarProceso()">🚀 Iniciar</button>
+        <button class="btn btn-danger" onclick="detenerProceso()">⏹ Detener</button>
+        <button class="btn btn-warning" onclick="recargarIframe()">🔄 Recargar</button>
+    </div>
+
+    <div class="status-bar">
+        <span>📊 Estado: <span class="status-text" id="estadoTexto">Esperando inicio...</span></span>
+        <span class="counter">📝 Enviadas: <span id="contadorEnvios">0</span></span>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="frame-container">
+        <iframe id="frameEncuesta" src="about:blank"></iframe>
+        <div class="frame-overlay" id="frameOverlay">🔒 Procesando...</div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Cargando encuesta...</p>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE RESPUESTAS COHERENTES
+        // ============================================
+
+        const DATOS = {
+            nombres: ['Ana', 'Carlos', 'María', 'José', 'Laura', 'Pedro', 'Sofía', 'Luis', 'Elena', 'Miguel', 
+                     'Carmen', 'Javier', 'Patricia', 'Roberto', 'Isabel', 'Andrés', 'Raquel', 'David', 'Marta', 'Pablo'],
+            apellidos: ['García', 'Martínez', 'López', 'Rodríguez', 'Fernández', 'González', 'Pérez', 'Sánchez',
+                       'Ramírez', 'Torres', 'Rivera', 'Morales', 'Ortiz', 'Cruz', 'Reyes', 'Gutiérrez', 'Mendoza'],
+            dominios: ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'protonmail.com', 'icloud.com'],
+            generos: ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir'],
+            satisfaccion: ['Muy satisfecho', 'Satisfecho', 'Neutral', 'Insatisfecho', 'Muy insatisfecho'],
+            frecuencia: ['Diario', 'Semanal', 'Mensual', 'Raramente', 'Nunca'],
+            si_no: ['Sí', 'No', 'Tal vez'],
+            numeros: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+            comentarios: [
+                'Excelente servicio, muy recomendable',
+                'Buena experiencia en general, volvería a usar el servicio',
+                'Regular, esperaba más atención al cliente',
+                'Muy contento con el resultado obtenido',
+                'Podría mejorar en algunos detalles pero en general bien',
+                'El servicio cumple con lo esperado, sin quejas',
+                'No tengo quejas, todo funcionó perfectamente',
+                'La atención fue rápida y eficiente',
+                'Me gusta la calidad del producto/servicio',
+                'Los precios son competitivos y accesibles',
+                'Volveré a usar el servicio sin dudas',
+                'Recomiendo a todos este servicio',
+                'Excelente relación calidad-precio',
+                'Muy profesional y confiable'
+            ],
+            edades: Array.from({length: 48}, (_, i) => i + 18), // 18-65
+            mejoras: ['Precio', 'Calidad', 'Atención', 'Velocidad', 'Diseño', 'Funcionalidad', 'Ninguno']
+        };
+
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+
+        let procesoActivo = false;
+        let contadorEnvios = 0;
+        let intervalId = null;
+        let intentosFallidos = 0;
+        const MAX_INTENTOS = 10;
+
+        // ============================================
+        // FUNCIONES DE GENERACIÓN DE DATOS
+        // ============================================
+
+        function randomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function generarNombre() {
+            return `${randomItem(DATOS.nombres)} ${randomItem(DATOS.apellidos)}`;
+        }
+
+        function generarEmail() {
+            const nombre = randomItem(DATOS.nombres).toLowerCase();
+            const apellido = randomItem(DATOS.apellidos).toLowerCase();
+            return `${nombre}.${apellido}${Math.floor(Math.random() * 999)}@${randomItem(DATOS.dominios)}`;
+        }
+
+        function generarEdad() {
+            return randomItem(DATOS.edades);
+        }
+
+        function generarGenero() {
+            return randomItem(DATOS.generos);
+        }
+
+        function generarSatisfaccion() {
+            return randomItem(DATOS.satisfaccion);
+        }
+
+        function generarFrecuencia() {
+            return randomItem(DATOS.frecuencia);
+        }
+
+        function generarSiNo() {
+            return randomItem(DATOS.si_no);
+        }
+
+        function generarCalificacion() {
+            return randomItem(DATOS.numeros);
+        }
+
+        function generarComentario() {
+            return randomItem(DATOS.comentarios);
+        }
+
+        function generarMejoras() {
+            const num = Math.floor(Math.random() * 3) + 1;
+            const seleccionados = [];
+            const temp = [...DATOS.mejoras];
+            for (let i = 0; i < num && temp.length > 0; i++) {
+                const idx = Math.floor(Math.random() * temp.length);
+                seleccionados.push(temp[idx]);
+                temp.splice(idx, 1);
+            }
+            return seleccionados;
+        }
+
+        // ============================================
+        // FUNCIÓN PRINCIPAL: RELLENAR IFRAME
+        // ============================================
+
+        function rellenarEncuestaEnIframe() {
+            try {
+                const iframe = document.getElementById('frameEncuesta');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                if (!doc || !doc.body) {
+                    console.warn('⚠️ Iframe no cargado completamente');
+                    return false;
+                }
+
+                console.log('🔄 Rellenando encuesta en:', doc.URL);
+                let camposRellenados = 0;
+
+                // ========== 1. BUSCAR TODOS LOS INPUTS ==========
+                const inputs = doc.querySelectorAll('input, textarea, select');
+                
+                inputs.forEach((elemento) => {
+                    try {
+                        // Saltar elementos ocultos o deshabilitados
+                        if (elemento.type === 'hidden' || elemento.disabled) return;
+                        
+                        const tipo = elemento.type ? elemento.type.toLowerCase() : '';
+                        const tag = elemento.tagName.toLowerCase();
+                        const name = (elemento.name || '').toLowerCase();
+                        const id = (elemento.id || '').toLowerCase();
+                        const placeholder = (elemento.placeholder || '').toLowerCase();
+                        const value = elemento.value || '';
+                        
+                        // ========== 2. DETECTAR TIPO DE CAMPO ==========
+                        
+                        // --- TEXT / EMAIL / NUMBER ---
+                        if (tipo === 'text' || tipo === 'email' || tipo === 'tel' || tipo === 'url' || tipo === 'search') {
+                            let respuesta = '';
+                            
+                            // Detectar por nombre o placeholder
+                            if (name.includes('nombre') || name.includes('name') || placeholder.includes('nombre') || placeholder.includes('name')) {
+                                respuesta = generarNombre();
+                            } else if (name.includes('email') || name.includes('correo') || placeholder.includes('email') || placeholder.includes('correo')) {
+                                respuesta = generarEmail();
+                            } else if (name.includes('edad') || name.includes('age') || placeholder.includes('edad') || placeholder.includes('age')) {
+                                respuesta = String(generarEdad());
+                            } else {
+                                respuesta = generarComentario().substring(0, 50);
+                            }
+                            
+                            if (respuesta) {
+                                elemento.value = respuesta;
+                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
+                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                                camposRellenados++;
+                            }
+                        }
+                        
+                        // --- NUMBER ---
+                        else if (tipo === 'number') {
+                            let respuesta = '';
+                            if (name.includes('edad') || name.includes('age')) {
+                                respuesta = String(generarEdad());
+                            } else if (name.includes('calif') || name.includes('rating') || name.includes('puntuacion')) {
+                                respuesta = generarCalificacion();
+                            } else {
+                                respuesta = String(Math.floor(Math.random() * 10) + 1);
+                            }
+                            elemento.value = respuesta;
+                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
+                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                            camposRellenados++;
+                        }
+                        
+                        // --- RADIO ---
+                        else if (tipo === 'radio') {
+                            const nameRadio = elemento.name;
+                            if (nameRadio && !elemento.checked) {
+                                // Solo procesar si no está marcado
+                                const grupo = doc.querySelectorAll(`input[name="${nameRadio}"]`);
+                                if (grupo.length > 0) {
+                                    // Seleccionar aleatoriamente una opción del grupo
+                                    const opcionesDisponibles = Array.from(grupo).filter(el => !el.disabled && el.offsetParent !== null);
+                                    if (opcionesDisponibles.length > 0) {
+                                        const elegido = randomItem(opcionesDisponibles);
+                                        elegido.checked = true;
+                                        elegido.dispatchEvent(new Event('change', { bubbles: true }));
+                                        elegido.dispatchEvent(new Event('click', { bubbles: true }));
+                                        camposRellenados++;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // --- CHECKBOX ---
+                        else if (tipo === 'checkbox') {
+                            if (Math.random() > 0.5) { // 50% de probabilidad
+                                elemento.checked = true;
+                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                                elemento.dispatchEvent(new Event('click', { bubbles: true }));
+                                camposRellenados++;
+                            }
+                        }
+                        
+                        // --- SELECT ---
+                        else if (tag === 'select') {
+                            const opciones = Array.from(elemento.options).filter(opt => opt.value && !opt.disabled);
+                            if (opciones.length > 0) {
+                                const elegida = randomItem(opciones);
+                                elemento.value = elegida.value;
+                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                                camposRellenados++;
+                            }
+                        }
+                        
+                        // --- TEXTAREA ---
+                        else if (tag === 'textarea') {
+                            let respuesta = generarComentario();
+                            // Ajustar longitud según el atributo rows
+                            const rows = parseInt(elemento.rows) || 3;
+                            if (rows <= 2) {
+                                respuesta = respuesta.substring(0, 30);
+                            }
+                            elemento.value = respuesta;
+                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
+                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                            camposRellenados++;
+                        }
+                        
+                        // --- RANGE (slider) ---
+                        else if (tipo === 'range') {
+                            const min = parseFloat(elemento.min) || 1;
+                            const max = parseFloat(elemento.max) || 10;
+                            const valor = Math.floor(Math.random() * (max - min + 1)) + min;
+                            elemento.value = valor;
+                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
+                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                            camposRellenados++;
+                        }
+                        
+                        // --- DATE ---
+                        else if (tipo === 'date') {
+                            const year = Math.floor(Math.random() * (2025 - 1990)) + 1990;
+                            const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+                            const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+                            elemento.value = `${year}-${month}-${day}`;
+                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
+                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                            camposRellenados++;
+                        }
+                        
+                    } catch (e) {
+                        console.warn('Error al procesar elemento:', e);
+                    }
+                });
+
+                // ========== 3. BUSCAR BOTÓN DE ENVÍO ==========
+                const botones = doc.querySelectorAll('input[type="submit"], button[type="submit"], button:not([type]), .btn-submit, .submit, [role="button"]');
+                let botonEncontrado = null;
+                
+                for (const btn of botones) {
+                    if (btn.offsetParent !== null && !btn.disabled) {
+                        const texto = (btn.textContent || btn.value || '').toLowerCase();
+                        if (texto.includes('enviar') || texto.includes('submit') || texto.includes('envi') || 
+                            texto.includes('send') || texto.includes('aceptar') || texto.includes('ok')) {
+                            botonEncontrado = btn;
+                            break;
+                        }
+                    }
+                }
+
+                // Si no encuentra botón por texto, usar el primero visible
+                if (!botonEncontrado) {
+                    for (const btn of botones) {
+                        if (btn.offsetParent !== null && !btn.disabled) {
+                            botonEncontrado = btn;
+                            break;
+                        }
+                    }
+                }
+
+                if (botonEncontrado) {
+                    console.log('✅ Botón de envío encontrado, enviando...');
+                    botonEncontrado.click();
+                    camposRellenados++;
+                    
+                    // Esperar un momento y verificar si hay confirmación
+                    setTimeout(() => {
+                        verificarConfirmacion(doc);
+                    }, 2000);
+                    
+                    return true;
+                } else {
+                    console.warn('⚠️ No se encontró botón de envío');
+                    return false;
+                }
+
+            } catch (error) {
+                console.error('❌ Error al rellenar:', error);
+                return false;
+            }
+        }
+
+        // ============================================
+        // VERIFICAR CONFIRMACIÓN DE ENVÍO
+        // ============================================
+
+        function verificarConfirmacion(doc) {
+            try {
+                const textos = ['gracias', 'enviado', 'completado', 'success', 'confirmación', 'confirmacion', 'éxito', 'exito'];
+                const bodyText = doc.body ? doc.body.textContent.toLowerCase() : '';
+                const contieneConfirmacion = textos.some(t => bodyText.includes(t));
+                
+                if (contieneConfirmacion) {
+                    contadorEnvios++;
+                    document.getElementById('contadorEnvios').textContent = contadorEnvios;
+                    actualizarEstado(`✅ Encuesta #${contadorEnvios} enviada correctamente`, '#48bb78');
+                    console.log(`✅ Encuesta #${contadorEnvios} enviada con éxito`);
+                    intentosFallidos = 0;
+                } else {
+                    console.warn('⚠️ No se detectó confirmación de envío');
+                    intentosFallidos++;
+                }
+            } catch (e) {
+                console.warn('Error al verificar confirmación:', e);
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE CONTROL
+        // ============================================
+
+        function actualizarEstado(texto, color = '#667eea') {
+            const estado = document.getElementById('estadoTexto');
+            estado.textContent = texto;
+            estado.style.color = color;
+        }
+
+        function actualizarProgreso(porcentaje) {
+            const bar = document.getElementById('progressBar');
+            const fill = document.getElementById('progressFill');
+            bar.style.display = 'block';
+            fill.style.width = porcentaje + '%';
+        }
+
+        function recargarIframe() {
+            const iframe = document.getElementById('frameEncuesta');
+            const url = document.getElementById('urlEncuesta').value.trim();
+            if (url) {
+                iframe.src = url;
+                actualizarEstado('🔄 Recargando...', '#f6ad55');
+                setTimeout(() => {
+                    actualizarEstado('✅ Recargado, esperando acción', '#667eea');
+                }, 3000);
+            }
+        }
+
+        // ============================================
+        // PROCESO PRINCIPAL
+        // ============================================
+
+        function iniciarProceso() {
+            const url = document.getElementById('urlEncuesta').value.trim();
+            const veces = parseInt(document.getElementById('numVeces').value) || 3;
+
+            if (!url) {
+                alert('❌ Por favor, ingresa una URL de encuesta válida');
+                return;
+            }
+
+            if (procesoActivo) {
+                alert('⚠️ Ya hay un proceso en ejecución');
+                return;
+            }
+
+            if (veces < 1 || veces > 50) {
+                alert('⚠️ El número de veces debe ser entre 1 y 50');
+                return;
+            }
+
+            procesoActivo = true;
+            contadorEnvios = 0;
+            intentosFallidos = 0;
+            document.getElementById('contadorEnvios').textContent = '0';
+
+            // Cargar iframe
+            const iframe = document.getElementById('frameEncuesta');
+            iframe.src = url;
+            actualizarEstado('📥 Cargando encuesta...', '#f6ad55');
+            document.getElementById('frameOverlay').style.display = 'block';
+
+            // Esperar que cargue y comenzar
+            let intentosCarga = 0;
+            const maxIntentosCarga = 10;
+
+            const esperarCarga = setInterval(() => {
+                intentosCarga++;
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (doc && doc.body && doc.body.children.length > 0) {
+                        clearInterval(esperarCarga);
+                        document.getElementById('frameOverlay').style.display = 'none';
+                        actualizarEstado('✅ Encuesta cargada, comenzando...', '#48bb78');
+                        
+                        // Iniciar el proceso de relleno
+                        ejecutarRelleno(veces);
+                    }
+                } catch (e) {
+                    // Error de cross-origin, pero intentamos igual
+                    if (intentosCarga >= maxIntentosCarga) {
+                        clearInterval(esperarCarga);
+                        document.getElementById('frameOverlay').style.display = 'none';
+                        actualizarEstado('⚠️ No se pudo cargar completamente, intentando igual...', '#f6ad55');
+                        ejecutarRelleno(veces);
+                    }
+                }
+            }, 1000);
+        }
+
+        function ejecutarRelleno(veces) {
+            let ejecutadas = 0;
+            const total = veces;
+
+            function cicloRelleno() {
+                if (!procesoActivo || ejecutadas >= total || intentosFallidos >= MAX_INTENTOS) {
+                    if (intentosFallidos >= MAX_INTENTOS) {
+                        actualizarEstado(`❌ Demasiados fallos (${MAX_INTENTOS}), deteniendo`, '#fc8181');
+                    } else {
+                        actualizarEstado(`✅ Proceso completado: ${ejecutadas} encuestas enviadas`, '#48bb78');
+                    }
+                    procesoActivo = false;
+                    document.getElementById('frameOverlay').style.display = 'none';
+                    actualizarProgreso(100);
+                    setTimeout(() => {
+                        document.getElementById('progressBar').style.display = 'none';
+                        document.getElementById('progressFill').style.width = '0%';
+                    }, 3000);
+                    return;
+                }
+
+                ejecutadas++;
+                const porcentaje = (ejecutadas / total) * 100;
+                actualizarProgreso(porcentaje);
+                actualizarEstado(`🔄 Rellenando encuesta ${ejecutadas}/${total}...`, '#667eea');
+                document.getElementById('frameOverlay').style.display = 'block';
+                document.getElementById('frameOverlay').textContent = `📝 Procesando ${ejecutadas}/${total}`;
+
+                // Esperar un momento para que cargue después del envío anterior
+                setTimeout(() => {
+                    const exito = rellenarEncuestaEnIframe();
+                    
+                    if (!exito) {
+                        intentosFallidos++;
+                        console.warn(`⚠️ Intento ${ejecutadas} fallido (${intentosFallidos}/${MAX_INTENTOS})`);
+                    }
+
+                    // Recargar el iframe para la siguiente
+                    setTimeout(() => {
+                        if (procesoActivo && ejecutadas < total) {
+                            const iframe = document.getElementById('frameEncuesta');
+                            const url = document.getElementById('urlEncuesta').value.trim();
+                            iframe.src = url;
+                            document.getElementById('frameOverlay').textContent = '🔄 Cargando siguiente...';
+                            
+                            // Esperar recarga y continuar
+                            setTimeout(() => {
+                                cicloRelleno();
+                            }, 3000);
+                        } else {
+                            cicloRelleno();
+                        }
+                    }, 2000);
+                    
+                }, 2000);
+            }
+
+            // Iniciar ciclo
+            cicloRelleno();
+        }
+
+        function detenerProceso() {
+            procesoActivo = false;
+            actualizarEstado('⏹ Proceso detenido por el usuario', '#fc8181');
+            document.getElementById('frameOverlay').style.display = 'none';
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+
+        console.log('🤖 Automatizador de Encuestas cargado');
+        console.log('ℹ️ Ingresa la URL de tu encuesta y presiona "Iniciar"');
+        console.log('📌 El sistema rellenará automáticamente todos los campos');
+
+        // Cargar URL de ejemplo si existe en el input
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputUrl = document.getElementById('urlEncuesta');
+            if (inputUrl.value) {
+                const iframe = document.getElementById('frameEncuesta');
+                iframe.src = inputUrl.value;
+            }
+        });
+    </script>
+
+</body>
+</html>

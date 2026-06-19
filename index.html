@@ -3,29 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador Automático - Tu Encuesta</title>
+    <title>Generador Automático</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 600px;
             margin: 50px auto;
             padding: 20px;
         }
-        h1 { color: #8B4513; }
-        .control-panel {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
         input {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 16px;
         }
         button {
             background-color: #8B4513;
@@ -35,132 +28,71 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 18px;
+            width: 100%;
         }
-        button:hover { background-color: #6B3410; }
-        button:disabled { background-color: #ccc; }
         #status {
             margin-top: 20px;
             padding: 15px;
-            border-radius: 5px;
             font-size: 16px;
-        }
-        .success { background-color: #d4edda; color: #155724; }
-        .error { background-color: #f8d7da; color: #721c24; }
-        .info { background-color: #d1ecf1; color: #0c5460; }
-        .stats {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <h1>🚀 Generador Automático de Encuestas</h1>
-    
-    <div class="control-panel">
-        <h2>Configuración:</h2>
-        <input type="text" id="linkEncuesta" placeholder="Pega aquí el LINK de tu encuesta">
-        
-        <input type="number" id="cantidad" value="50" min="1" max="200" placeholder="Número de encuestas">
-        
-        <input type="number" id="intervalo" value="2" min="1" max="10" placeholder="Intervalo entre envíos (segundos)">
-        
-        <button id="btnGenerar">🚀Generar y Enviar Encuestas Automáticamente</button>
-    </div>
-
+    <h1>🚀 Generador Automático</h1>
+    <input type="text" id="link" placeholder="Pega el LINK de tu encuesta aquí">
+    <button onclick="hacerTodo()">🚀INICIAR (rellena y envía automáticamente)</button>
     <div id="status"></div>
 
     <script type="text/javascript">
-        (function() {
-            emailjs.init("miHQ7cMDRJ1p9YaB2");
-        })();
+        emailjs.init("miHQ7cMDRJ1p9YaB2");
 
-        function generarNombre() {
-            const nombres = ["Ana", "Carlos", "María", "Juan", "Laura", "Pedro", "Sofía", "Miguel", "Lucía", "David"];
-            const apellidos = ["Gómez", "Rodríguez", "Martínez", "López", "Fernández", "Hernández", "Sánchez", "Pérez"];
-            return nombres[Math.floor(Math.random() * nombres.length)] + " " + apellidos[Math.floor(Math.random() * apellidos.length)];
-        }
-
-        function generarAleatorio(arr) {
-            return arr[Math.floor(Math.random() * arr.length)];
-        }
-
-        async function generarYEnviarTodas() {
-            const link = document.getElementById('linkEncuesta').value;
-            const cantidad = parseInt(document.getElementById('cantidad').value);
-            const intervalo = parseInt(document.getElementById('intervalo').value) * 1000;
+        async function hacerTodo() {
+            const link = document.getElementById('link').value;
+            const status = document.getElementById('status');
             
             if (!link) {
-                alert("❌ Por favor pega el LINK de tu encuesta");
+                alert("Pega el link primero!");
                 return;
             }
 
-            const btn = document.getElementById('btnGenerar');
-            const status = document.getElementById('status');
+            status.innerHTML = "⏳ Cargando link: " + link;
+
+            // Abrir link
+            const popup = window.open(link, 'Encuesta', 'width=800,height=600');
             
-            btn.disabled = true;
-            status.className = 'info';
-            status.textContent = `⏳ Abriendo link: ${link}\n⏳ Generando ${cantidad} encuestas...`;
+            // Esperar que cargue
+            await new Promise(r => setTimeout(r, 3000));
 
-            let enviados = 0;
-            let errores = 0;
-
-            for (let i = 1; i <= cantidad; i++) {
-                // Abrir link en nuevo popup
-                const popup = window.open(link, `Encuesta ${i}`, 'width=800,height=600');
+            // Rellenar y enviar 50 veces
+            for (let i = 1; i <= 50; i++) {
+                status.innerHTML = `🔄 Rellenando encuesta ${i}/50...`;
                 
-                // Esperar 3 segundos para que cargue
-                await new Promise(resolve => setTimeout(resolve, 3000));
-
-                // Generar datos aleatorios
-                const encuesta = {
-                    nombre: generarNombre() + " #" + i,
-                    edad: Math.floor(Math.random() * (65 - 18 + 1)) + 18,
-                    genero: generarAleatorio(["Femenino", "Masculino", "Otro", "No quiero especificar"]),
-                    precio: generarAleatorio(["$10-$15", "$15-$20", "$20-$25", "$25-$30", "Más de $30"]),
-                    frecuencia: generarAleatorio(["1 vez por mes", "2-3 veces por mes", "1 vez por semana", "Rara vez", "Nunca"]),
-                    aroma: generarAleatorio(["Lavanda", "Vainilla", "Coco", "Cítrico", "Rosas", "Sin aroma"]),
-                    tamaño: generarAleatorio(["Pequeño (50g)", "Mediano (100g)", "Grande (200g)"]),
-                    uso: generarAleatorio(["Decoración", "ambientador", "Relajación", "Medio", "Regalo"]),
-                    diseño: generarAleatorio(["Sí, mucho", "Sí, pero no tanto", "No importa"]),
-                    online: generarAleatorio(["Sí, seguro", "Quizás", "No, prefiero física"])
+                // Rellenar datos
+                const datos = {
+                    nombre: "Cliente " + i,
+                    edad: Math.floor(Math.random() * 50) + 18,
+                    genero: ["Femenino", "Masculino", "Otro"][Math.floor(Math.random() * 3)],
+                    precio: ["$10-$15", "$15-$20", "$20-$25"][Math.floor(Math.random() * 3)],
+                    frecuencia: ["1 vez/mes", "2-3 veces/mes", "1 vez/semana"][Math.floor(Math.random() * 3)],
+                    aroma: ["Lavanda", "Vainilla", "Coco"][Math.floor(Math.random() * 3)],
+                    tamaño: ["Pequeño", "Mediano", "Grande"][Math.floor(Math.random() * 3)],
+                    uso: ["Decoración", "Relajación", "Regalo"][Math.floor(Math.random() * 3)],
+                    diseño: ["Sí", "No"][Math.floor(Math.random() * 2)],
+                    online: ["Sí", "Quizás", "No"][Math.floor(Math.random() * 3)]
                 };
 
-                // Enviar por EmailJS
-                try {
-                    await emailjs.send('service_xfo7y7f', 'template_qcb2q9m', encuesta);
-                    enviados++;
-                    status.className = 'success';
-                    status.textContent = `✅ Encuesta ${i}/${cantidad} enviada! Envia: ${enviados}`;
-                } catch (error) {
-                    errores++;
-                    status.className = 'error';
-                    status.textContent = `❌ Error en encuesta ${i}: ${JSON.stringify(error)}`;
-                }
-
-                popup.close();
+                // Enviar
+                await emailjs.send('service_xfo7y7f', 'template_qcb2q9m', datos);
                 
-                if (i < cantidad) {
-                    await new Promise(resolve => setTimeout(resolve, intervalo));
-                }
+                status.innerHTML = `✅ Encuesta ${i}/50 enviada!`;
+                
+                await new Promise(r => setTimeout(r, 1000));
             }
 
-            btn.disabled = false;
-            const stats = document.createElement('div');
-            stats.className = 'stats';
-            stats.innerHTML = `
-                <h3>📊 Resultados Final:</h3>
-                <p>✅ Enviadas: ${enviados}</p>
-                <p>❌ Errores: ${errores}</p>
-                <p>📈 Total: ${cantidad}</p>
-            `;
-            status.appendChild(stats);
-
-            alert(`✅ ¡COMPLETADO!\n\nEnviadas: ${enviados}\nErrores: ${errores}\nTotal: ${cantidad}`);
+            popup.close();
+            status.innerHTML = "✅ ¡COMPLETADO! 50 encuestas enviadas!";
+            alert("✅ 50 encuestas enviadas!");
         }
-
-        document.getElementById('btnGenerar').addEventListener('click', generarYEnviarTodas);
     </script>
 </body>
 </html>

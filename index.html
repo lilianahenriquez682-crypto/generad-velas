@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuesta Velas - Proyecto</title>
+    <title>Encuesta Velas</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body { background: #fff9f3; padding: 2rem; max-width: 620px; margin: 0 auto; text-align: center; }
@@ -19,14 +19,14 @@
     <h1>📊 Encuesta sobre Velas Aromáticas</h1>
 
     <div class="info">
-        <p><strong>✅ Funcionamiento confirmado:</strong></p>
-        <p>• Enlace oficial: <em>https://lilianahenriquez682-crypto.github.io/encuesta-velas</em></p>
-        <p>• Genera: Respuesta <strong>Sí</strong> en la primera pregunta, edad entre 18-55, puntuaciones 3-5</p>
-        <p>• TÚ SOLO: Abrir → clic en <strong>Continuar</strong> en cada página → al final <strong>Enviar</strong></p>
-        <p>• Cada botón = respuesta distinta y coherente</p>
+        <p><strong>✅ Funcionamiento:</strong></p>
+        <p>• Ya tiene tu enlace oficial puesto</p>
+        <p>• Marca automáticamente: <strong>Sí</strong> + Edad 18-55 + Puntuaciones 3-5</p>
+        <p>• TÚ SOLO: Clic en <strong>Continuar</strong> → al final <strong>Enviar</strong></p>
+        <p>• Cada botón = respuesta diferente</p>
     </div>
 
-    <!-- 👇 TU ENLACE YA PUESTO AQUÍ 👇 -->
+    <!-- 👇 TU ENLACE YA ESTÁ AQUÍ, NO CAMBIES NADA 👇 -->
     <input type="hidden" id="enlaceUnico" value="https://lilianahenriquez682-crypto.github.io/encuesta-velas">
 
     <button class="boton" onclick="generar()">🔹 Respuesta 1</button>
@@ -43,17 +43,16 @@
     <script>
         function generar() {
             const enlace = document.getElementById("enlaceUnico").value.trim();
+            // Datos ajustados exactos a tu encuesta
+            const edad = Math.floor(Math.random() * 38) + 18;
+            const compro = "Sí";
+            const nota1 = Math.floor(Math.random() * 3) + 3;
+            const nota2 = Math.floor(Math.random() * 3) + 3;
+            const nota3 = Math.floor(Math.random() * 3) + 3;
+            const nota4 = Math.floor(Math.random() * 3) + 3;
 
-            // Datos ajustados EXACTAMENTE a tu encuesta:
-            const edad = Math.floor(Math.random() * 38) + 18;       // Edad: 18 a 55 años
-            const compra = "Sí";                                       // Primera pregunta: Ha comprado = Sí
-            const p1 = Math.floor(Math.random() * 3) + 3;            // Escala 1-5: 3,4 o 5
-            const p2 = Math.floor(Math.random() * 3) + 3;
-            const p3 = Math.floor(Math.random() * 3) + 3;
-            const p4 = Math.floor(Math.random() * 3) + 3;
-
-            // Abre con los datos ya configurados
-            window.open(`${enlace}?f1=${compra}&c1=${edad}&q1=${p1}&q2=${p2}&q3=${p3}&q4=${p4}`, "_blank");
+            // Abre la encuesta con todo listo
+            window.open(`${enlace}?f1=${compro}&c1=${edad}&q1=${nota1}&q2=${nota2}&q3=${nota3}&q4=${nota4}`, "_blank");
         }
     </script>
 </body>

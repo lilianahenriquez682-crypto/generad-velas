@@ -3,48 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuesta Velas - Proyecto Académico</title>
+    <title>Encuestas sobre Velas - Proyecto</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-        body { background:#fff9f3; padding:2rem; max-width:620px; margin:0 auto; text-align:center; }
-        .logo { font-size:3.5rem; margin-bottom:1rem; }
-        h1 { color:#8b4513; margin-bottom:1.2rem; font-size:26px; }
-        .info { background:#fff3e8; padding:1.3rem; border-radius:8px; margin-bottom:2rem; border-left:5px solid #d28b48; text-align:left; }
-        .info p { margin:0.6rem 0; color:#444; line-height:1.5; }
-        .boton { padding:1.1rem 2.2rem; background:#d28b48; color:white; border:none; border-radius:8px; font-size:1.2rem; font-weight:bold; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.15); }
-        .boton:hover { background:#b97335; transform:translateY(-2px); }
-        .estado { margin-top:1.5rem; color:#2e7d32; font-weight:bold; display:none; font-size:1.1rem; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #fff9f3; padding: 2rem; max-width: 650px; margin: 0 auto; text-align: center; }
+        .logo { font-size: 3.5rem; margin-bottom: 1rem; }
+        h1 { color: #8b4513; margin-bottom: 1.2rem; font-size: 26px; }
+        .info { background: #fff3e8; padding: 1.2rem; border-radius: 8px; margin-bottom: 2rem; border-left: 5px solid #d28b48; text-align: left; }
+        .info p { margin: 0.5rem 0; color: #444; line-height: 1.5; }
+        .boton { display: block; margin: 0.8rem auto; padding: 1rem; width: 95%; background: #d28b48; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; text-decoration: none; cursor: pointer; }
+        .boton:hover { background: #b97335; }
+        .aviso { margin-top: 1.5rem; color: #2e7d32; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <!-- Logo del gatito -->
     <div class="logo">🐱</div>
-    <h1>📊 Encuesta sobre Velas Aromáticas</h1>
+    <h1>📊 Encuestas sobre Velas</h1>
 
     <div class="info">
-        <p>✅ <strong>¿Qué hace?:</strong> Abre tu encuesta y trae ya marcados:</p>
-        <p>• ✅ Respuesta: <strong>Sí</strong> (ha comprado en 6 meses)</p>
-        <p>• 🎂 Edad: número lógico entre <strong>18 y 52 años</strong></p>
-        <p>• ⭐ Escalas: valores coherentes (3,4,5 mayormente)</p>
-        <p>👉 <strong>TÚ SOLO:</strong> Das clic en <em>Siguiente</em> en cada página y al final en <em>Enviar</em></p>
+        <p>✅ <strong>Lo que hace:</strong></p>
+        <p>• Al pulsar, se abre tu encuesta con <strong>edad y respuestas ya marcadas</strong></p>
+        <p>• Edad entre 18 y 55 años, respuestas lógicas para velas</p>
+        <p>• Funciona aunque tenga varias páginas</p>
+        <p>👉 <strong>Tú solo:</strong> Pones TU enlace aquí abajo y luego solo das clic en "Enviar"</p>
     </div>
 
-    <!-- TU ENLACE YA INCLUIDO AQUÍ -->
-    <input type="hidden" id="enlaceBase" value="https://lilianahenriquez682-crypto.github.io/encuesta-velas">
+    <!-- 👇 AQUÍ ES DONDE TÚ PEGAS TU ENLACE 👇 -->
+    <input type="hidden" id="enlaceDeTuEncuesta" value="AQUÍ_PEGAS_TU_ENLACE_COMPLETO_AQUÍ">
 
-    <button class="boton" onclick="abrirLista()">⚡ Abrir y dejar todo marcado</button>
-    <div id="aviso" class="estado">✔️ Lista, solo avanza y envía</div>
+    <button class="boton" onclick="abrirLista()">🔹 Abrir Encuesta lista 1</button>
+    <button class="boton" onclick="abrirLista()">🔹 Abrir Encuesta lista 2</button>
+    <button class="boton" onclick="abrirLista()">🔹 Abrir Encuesta lista 3</button>
+    <button class="boton" onclick="abrirLista()">🔹 Abrir Encuesta lista 4</button>
+    <button class="boton" onclick="abrirLista()">🔹 Abrir Encuesta lista 5</button>
+
+    <div class="aviso">
+        📩 Cada respuesta enviada te llegará con aviso a tu correo
+    </div>
 
     <script>
         function abrirLista() {
-            let base = document.getElementById("enlaceBase").value.trim();
-            // Genera valores coherentes
-            let edad = Math.floor(Math.random() * 35) + 18;
-            // Formato compatible con tu encuesta
-            let enlacePre = `${base}?comprado=Sí&edad=${edad}`;
-            // Abre en nueva pestaña
-            window.open(enlacePre, "_blank");
-            document.getElementById("aviso").style.display = "block";
+            // Leemos el enlace que tú pongas
+            let enlaceBase = document.getElementById("enlaceDeTuEncuesta").value.trim();
+
+            // Verificación por si olvidas ponerlo
+            if (!enlaceBase || enlaceBase.includes("AQUÍ_PEGAS")) {
+                alert("⚠️ RECUERDA: Primero borra el texto de ejemplo y pon tu enlace real");
+                return;
+            }
+
+            // Genera datos coherentes automáticamente
+            let edad = Math.floor(Math.random() * 38) + 18;
+            let compro = Math.random() > 0.2 ? "Sí" : "No";
+            let gusto = Math.floor(Math.random() * 3) + 3;
+
+            // Arma el enlace con todo ya rellenado
+            let enlaceFinal = `${enlaceBase}?edad=${edad}&compra=${compro}&valor=${gusto}`;
+
+            // Abre la encuesta
+            window.open(enlaceFinal, "_blank");
         }
     </script>
 

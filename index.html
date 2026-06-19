@@ -1,64 +1,181 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador Automático</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
-        button { background-color: #8B4513; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; width: 100%; }
-        button:hover { background-color: #6B3410; }
-        button:disabled { background-color: #ccc; }
-        #status { margin-top: 20px; padding: 15px; font-size: 16px; }
-    </style>
-</head>
-<body>
-    <h1>🚀 Generador - 50 Encuestas</h1>
-    <button onclick="hacerTodo()">🚀INICIAR (50 encuestas)</button>
-    <div id="status"></div>
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import random
+import time
+import string
 
-    <script type="text/javascript">
-        emailjs.init("miHQ7cMDRJ1p9YaB2");
-
-        async function hacerTodo() {
-            const link = "https://lilianahenriquez682-crypto.github.io/encuesta-velas";
-            const status = document.getElementById('status');
-            const btn = document.querySelector('button');
-            
-            btn.disabled = true;
-            status.innerHTML = "⏳ Abriendo: " + link;
-
-            for (let i = 1; i <= 50; i++) {
-                status.innerHTML = `🔄 ${i}/50 - Rellenando...`;
-                
-                const popup = window.open(link, 'Encuesta' + i, 'width=800,height=600');
-                await new Promise(r => setTimeout(r, 3000));
-                
-                const datos = {
-                    nombre: "Cliente " + i,
-                    edad: Math.floor(Math.random() * 50) + 18,
-                    genero: ["Femenino", "Masculino", "Otro"][Math.floor(Math.random() * 3)],
-                    precio: ["$10-$15", "$15-$20", "$20-$25", "$25-$30"][Math.floor(Math.random() * 4)],
-                    frecuencia: ["1 vez/mes", "2-3 veces/mes", "1 vez/semana", "Rara vez"][Math.floor(Math.random() * 4)],
-                    aroma: ["Lavanda", "Vainilla", "Coco", "Cítrico", "Rosas"][Math.floor(Math.random() * 5)],
-                    tamaño: ["Pequeño (50g)", "Mediano (100g)", "Grande (200g)"][Math.floor(Math.random() * 3)],
-                    uso: ["Decoración", "Ambientador", "Relajación", "Regalo"][Math.floor(Math.random() * 4)],
-                    diseño: ["Sí, mucho", "Sí, pero no tanto", "No importa"][Math.floor(Math.random() * 3)],
-                    online: ["Sí, seguro", "Quizás", "No"][Math.floor(Math.random() * 3)]
-                };
-
-                await emailjs.send('service_xfo7y7f', 'template_qcb2q9m', datos);
-                popup.close();
-                
-                status.innerHTML = `✅ ${i}/50 enviada`;
-                await new Promise(r => setTimeout(r, 1500));
-            }
-
-            btn.disabled = false;
-            status.innerHTML = "✅ ¡50 ENCUESTAS ENVIADAS!";
-            alert("✅ 50 encuestas enviadas!");
+class EncuestaAutomatizada:
+    def __init__(self, url, veces=1):
+        self.url = url
+        self.veces = veces
+        self.opciones = {
+            'nombres': ['Ana', 'Carlos', 'María', 'José', 'Laura', 'Pedro', 'Sofía', 'Luis'],
+            'apellidos': ['García', 'Martínez', 'López', 'Rodríguez', 'Fernández', 'González'],
+            'edades': list(range(18, 65)),
+            'generos': ['Masculino', 'Femenino', 'Otro'],
+            'satisfaccion': ['Muy satisfecho', 'Satisfecho', 'Neutral', 'Insatisfecho', 'Muy insatisfecho'],
+            'frecuencia': ['Diario', 'Semanal', 'Mensual', 'Raramente', 'Nunca'],
+            'si_no': ['Sí', 'No'],
+            'numeros': list(range(1, 11))
         }
-    </script>
-</body>
-</html>
+        self.driver = None
+    
+    def generar_respuesta(self, tipo_pregunta):
+        """Genera respuestas coherentes según el tipo de pregunta"""
+        if tipo_pregunta in ['text', 'email', 'textarea']:
+            return self._generar_texto_aleatorio(tipo_pregunta)
+        elif tipo_pregunta == 'radio':
+            return random.choice(self.opciones['satisfaccion'])
+        elif tipo_pregunta == 'checkbox':
+            return random.sample(self.opciones['si_no'], random.randint(1, 2))
+        elif tipo_pregunta == 'select':
+            return random.choice(self.opciones['frecuencia'])
+        elif tipo_pregunta == 'number':
+            return str(random.choice(self.opciones['numeros']))
+        elif tipo_pregunta == 'date':
+            return f"{random.randint(1, 28)}/{random.randint(1, 12)}/{random.randint(2000, 2024)}"
+        else:
+            return "Respuesta coherente"
+
+    def _generar_texto_aleatorio(self, tipo):
+        """Genera texto coherente según el campo"""
+        if tipo == 'email':
+            nombre = random.choice(self.opciones['nombres']).lower()
+            apellido = random.choice(self.opciones['apellidos']).lower()
+            dominio = random.choice(['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'])
+            return f"{nombre}.{apellido}{random.randint(10, 99)}@{dominio}"
+        elif tipo == 'text' or tipo == 'textarea':
+            opciones_texto = [
+                "Excelente servicio, muy recomendable",
+                "Buena experiencia, volvería a usar el servicio",
+                "Regular, esperaba más de la atención",
+                "Mala experiencia, no lo recomiendo",
+                "El producto cumple con lo esperado",
+                "Necesita mejorar en algunos aspectos",
+                "Muy satisfecho con el resultado",
+                "Podría ser mejor, pero cumple su función"
+            ]
+            return random.choice(opciones_texto)
+        return "Respuesta estándar"
+
+    def identificar_tipo_pregunta(self, elemento):
+        """Identifica el tipo de campo de formulario"""
+        tag = elemento.tag_name.lower()
+        tipo = elemento.get_attribute('type')
+        
+        if tag == 'input':
+            if tipo == 'text' or tipo is None:
+                return 'text'
+            elif tipo == 'email':
+                return 'email'
+            elif tipo == 'number':
+                return 'number'
+            elif tipo == 'radio':
+                return 'radio'
+            elif tipo == 'checkbox':
+                return 'checkbox'
+            elif tipo == 'date':
+                return 'date'
+        elif tag == 'textarea':
+            return 'textarea'
+        elif tag == 'select':
+            return 'select'
+        return 'text'
+
+    def llenar_formulario(self):
+        """Llena un formulario completo con respuestas coherentes"""
+        # Esperar que cargue la página
+        wait = WebDriverWait(self.driver, 10)
+        
+        # Encontrar todos los campos del formulario
+        campos = self.driver.find_elements(By.CSS_SELECTOR, 'input, textarea, select')
+        
+        for campo in campos:
+            try:
+                if not campo.is_displayed() or not campo.is_enabled():
+                    continue
+                
+                # Saltar botones de envío
+                if campo.get_attribute('type') in ['submit', 'button', 'reset', 'hidden']:
+                    continue
+                
+                tipo = self.identificar_tipo_pregunta(campo)
+                
+                if tipo == 'radio':
+                    # Seleccionar una opción aleatoria del mismo grupo
+                    name = campo.get_attribute('name')
+                    if name:
+                        opciones = self.driver.find_elements(By.CSS_SELECTOR, f'input[name="{name}"]')
+                        if opciones:
+                            random.choice(opciones).click()
+                elif tipo == 'checkbox':
+                    if random.random() > 0.5:  # 50% probabilidad de marcar
+                        campo.click()
+                elif tipo == 'select':
+                    opciones = campo.find_elements(By.TAG_NAME, 'option')
+                    if len(opciones) > 1:
+                        random.choice(opciones[1:]).click()  # Saltar la primera opción (placeholder)
+                else:
+                    # Campos de texto, email, textarea
+                    respuesta = self.generar_respuesta(tipo)
+                    campo.clear()
+                    campo.send_keys(respuesta)
+                
+                time.sleep(random.uniform(0.1, 0.3))  # Simular comportamiento humano
+                
+            except Exception as e:
+                print(f"Error al llenar campo: {e}")
+                continue
+
+    def enviar_formulario(self):
+        """Envía el formulario"""
+        try:
+            botones = self.driver.find_elements(By.CSS_SELECTOR, 
+                'input[type="submit"], button[type="submit"], button:has-text("Enviar")')
+            
+            if botones:
+                botones[0].click()
+                print("✅ Formulario enviado correctamente")
+            else:
+                print("⚠️ No se encontró botón de envío")
+                
+        except Exception as e:
+            print(f"❌ Error al enviar: {e}")
+
+    def ejecutar(self):
+        """Ejecuta el proceso completo las veces indicadas"""
+        for i in range(self.veces):
+            try:
+                print(f"\n🔄 Ejecutando encuesta {i+1}/{self.veces}")
+                
+                # Iniciar navegador
+                self.driver = webdriver.Chrome()  # Asegúrate de tener ChromeDriver instalado
+                self.driver.get(self.url)
+                time.sleep(2)  # Esperar carga inicial
+                
+                self.llenar_formulario()
+                self.enviar_formulario()
+                
+                # Esperar confirmación
+                time.sleep(3)
+                
+            except Exception as e:
+                print(f"❌ Error en ejecución {i+1}: {e}")
+            finally:
+                if self.driver:
+                    self.driver.quit()
+                    time.sleep(1)
+        
+        print(f"\n✅ Proceso completado. {self.veces} encuestas realizadas.")
+
+# ========== CONFIGURACIÓN ==========
+# Cambia estos valores según necesites
+URL_ENCUESTA = "https://tu-encuesta.com"  # <-- Pon aquí el link
+NUMERO_VECES = 5  # <-- Cuántas veces quieres ejecutarla
+
+# Ejecutar
+if __name__ == "__main__":
+    automator = EncuestaAutomatizada(URL_ENCUESTA, NUMERO_VECES)
+    automator.ejecutar()

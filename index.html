@@ -166,7 +166,7 @@
 
     <script type="text/javascript">
         (function() {
-            emailjs.init("TU_PUBLIC_KEY");
+            emailjs.init("miHQ7cMDRJ1p9YaB2");
         })();
 
         document.getElementById('velas-form').addEventListener('submit', function(event) {
@@ -176,7 +176,7 @@
             status.textContent = '⏳ Enviando...';
             status.className = '';
 
-            emailjs.sendForm('TU_SERVICE_ID', 'TU_TEMPLATE_ID', this)
+            emailjs.sendForm('service_xfo7y7f', 'template_qcb2q9m', this)
                 .then(function() {
                     status.textContent = '✅ ¡Encuesta enviada con éxito! Gracias por responder.';
                     status.className = 'success';

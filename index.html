@@ -20,7 +20,7 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        input, select, textarea {
+        input, select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -52,26 +52,29 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+        .auto-filled {
+            background-color: #e8f5e9;
+        }
     </style>
 </head>
 <body>
     <h1>🕯️ Encuesta - Velas Artesanales</h1>
-    <p>Por favor responde todas las preguntas:</p>
+    <p>La encuesta se rellenará automáticamente. Solo click "Enviar" al final.</p>
 
     <form id="velas-form">
         <div class="form-group">
             <label for="nombre">1. Nombre completo:</label>
-            <input type="text" id="nombre" name="nombre" required>
+            <input type="text" id="nombre" name="nombre" class="auto-filled">
         </div>
 
         <div class="form-group">
             <label for="edad">2. Edad:</label>
-            <input type="number" id="edad" name="edad" required min="18" max="100">
+            <input type="number" id="edad" name="edad" class="auto-filled">
         </div>
 
         <div class="form-group">
             <label for="genero">3. Género:</label>
-            <select id="genero" name="genero" required>
+            <select id="genero" name="genero" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="Femenino">Femenino</option>
                 <option value="Masculino">Masculino</option>
@@ -82,7 +85,7 @@
 
         <div class="form-group">
             <label for="precio">4. ¿Cuánto pagarías por una vela artesanal?</label>
-            <select id="precio" name="precio" required>
+            <select id="precio" name="precio" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="$10-$15">$10 - $15</option>
                 <option value="$15-$20">$15 - $20</option>
@@ -94,7 +97,7 @@
 
         <div class="form-group">
             <label for="frecuencia">5. ¿Con qué frecuencia compras velas?</label>
-            <select id="frecuencia" name="frecuencia" required>
+            <select id="frecuencia" name="frecuencia" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="1 vez por mes">1 vez por mes</option>
                 <option value="2-3 veces por mes">2-3 veces por mes</option>
@@ -106,7 +109,7 @@
 
         <div class="form-group">
             <label for="aroma">6. ¿Qué aroma prefieres?</label>
-            <select id="aroma" name="aroma" required>
+            <select id="aroma" name="aroma" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="Lavanda">Lavanda</option>
                 <option value="Vainilla">Vainilla</option>
@@ -119,7 +122,7 @@
 
         <div class="form-group">
             <label for="tamaño">7. ¿Qué tamaño prefieres?</label>
-            <select id="tamaño" name="tamaño" required>
+            <select id="tamaño" name="tamaño" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="Pequeño (50g)">Pequeño (50g)</option>
                 <option value="Mediano (100g)">Mediano (100g)</option>
@@ -129,7 +132,7 @@
 
         <div class="form-group">
             <label for="uso">8. ¿Qué usas para las velas?</label>
-            <select id="uso" name="uso" required>
+            <select id="uso" name="uso" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="Decoración">Decoración</option>
                 <option value="ambientador">Ambientador</option>
@@ -141,7 +144,7 @@
 
         <div class="form-group">
             <label for="diseño">9. ¿Importa el diseño/color?</label>
-            <select id="diseño" name="diseño" required>
+            <select id="diseño" name="diseño" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="Sí, mucho">Sí, mucho</option>
                 <option value="Sí, pero no tanto">Sí, pero no tanto</option>
@@ -151,7 +154,7 @@
 
         <div class="form-group">
             <label for="online">10. ¿Comprarías online?</label>
-            <select id="online" name="online" required>
+            <select id="online" name="online" class="auto-filled">
                 <option value="">Selecciona</option>
                 <option value="Sí, seguro">Sí, seguro</option>
                 <option value="Quizás">Quizás</option>
@@ -169,6 +172,42 @@
             emailjs.init("miHQ7cMDRJ1p9YaB2");
         })();
 
+        // GENERAR RESPUESTA ALEATORIA
+        function generarAleatorio(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // RELLENAR FORMULARIO AUTOMÁTICAMENTE
+        function rellenarAutomáticamente() {
+            // Respuestas aleatorias
+            const nombre = "Cliente " + Math.floor(Math.random() * 1000);
+            const edad = Math.floor(Math.random() * (65 - 18 + 1)) + 18;
+            const genero = generarAleatorio(["Femenino", "Masculino", "Otro", "No quiero especificar"]);
+            const precio = generarAleatorio(["$10-$15", "$15-$20", "$20-$25", "$25-$30", "Más de $30"]);
+            const frecuencia = generarAleatorio(["1 vez por mes", "2-3 veces por mes", "1 vez por semana", "Rara vez", "Nunca"]);
+            const aroma = generarAleatorio(["Lavanda", "Vainilla", "Coco", "Cítrico", "Rosas", "Sin aroma"]);
+            const tamaño = generarAleatorio(["Pequeño (50g)", "Mediano (100g)", "Grande (200g)"]);
+            const uso = generarAleatorio(["Decoración", "ambientador", "Relajación", "Medio", "Regalo"]);
+            const diseño = generarAleatorio(["Sí, mucho", "Sí, pero no tanto", "No importa"]);
+            const online = generarAleatorio(["Sí, seguro", "Quizás", "No, prefiero física"]);
+
+            // Rellenar campos
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('edad').value = edad;
+            document.getElementById('genero').value = genero;
+            document.getElementById('precio').value = precio;
+            document.getElementById('frecuencia').value = frecuencia;
+            document.getElementById('aroma').value = aroma;
+            document.getElementById('tamaño').value = tamaño;
+            document.getElementById('uso').value = uso;
+            document.getElementById('diseño').value = diseño;
+            document.getElementById('online').value = online;
+        }
+
+        // RELLENAR AUTOMÁTICAMENTE CUANDO SE ABRE LA PÁGINA
+        rellenarAutomáticamente();
+
+        // ENVIAR FORMULARIO
         document.getElementById('velas-form').addEventListener('submit', function(event) {
             event.preventDefault();
             
@@ -178,9 +217,10 @@
 
             emailjs.sendForm('service_xfo7y7f', 'template_qcb2q9m', this)
                 .then(function() {
-                    status.textContent = '✅ ¡Encuesta enviada con éxito! Gracias por responder.';
+                    status.textContent = '✅ ¡Encuesta enviada con éxito! Gracias.';
                     status.className = 'success';
                     document.getElementById('velas-form').reset();
+                    rellenarAutomáticamente(); // Rellenar nueva encuesta
                 }, function(error) {
                     status.textContent = '❌ Error: ' + JSON.stringify(error);
                     status.className = 'error';

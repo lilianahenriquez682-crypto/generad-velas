@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Automatizador - Navegación Automática</title>
+    <title>🤖 Automatizador de Encuestas</title>
     <style>
         * {
             margin: 0;
@@ -16,6 +16,11 @@
             background: #0a0e27;
             min-height: 100vh;
             padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .header {
@@ -197,7 +202,7 @@
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
             border: 1px solid #2a2f4a;
         }
@@ -235,7 +240,7 @@
             background: #1a1f3a;
             border-radius: 15px;
             padding: 10px;
-            height: 60vh;
+            height: 65vh;
             position: relative;
             overflow: hidden;
         }
@@ -253,7 +258,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             padding: 30px 40px;
             border-radius: 15px;
             color: white;
@@ -294,37 +299,6 @@
             font-size: 0.9em;
         }
 
-        .lista-encuestas {
-            background: #1a1f3a;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .lista-encuestas textarea {
-            width: 100%;
-            padding: 10px;
-            background: #0d1128;
-            color: white;
-            border: 2px solid #2a2f4a;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .lista-encuestas textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .lista-encuestas .hint {
-            color: #a0aec0;
-            font-size: 0.85em;
-            margin-top: 5px;
-        }
-
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -347,26 +321,21 @@
 </head>
 <body>
 
+<div class="container">
     <div class="header">
         <h1>🤖 Automatizador de Encuestas</h1>
-        <p>🔄 Navegación automática: Rellena → Envía → Siguiente → Rellena → Envía</p>
-        <span class="badge">✅ Pasa automáticamente a la siguiente encuesta</span>
+        <p>📌 Rellena automáticamente CUALQUIER encuesta y la envía</p>
+        <span class="badge">✅ Funciona con Google Forms, Typeform, SurveyMonkey, etc.</span>
     </div>
 
     <div class="controls">
-        <input type="text" id="urlEncuesta" placeholder="URL base de la encuesta (ej: https://forms.gle/)" value="">
+        <input type="text" id="urlEncuesta" placeholder="https://forms.gle/tu-encuesta" value="">
         <label>Veces:</label>
         <input type="number" id="numVeces" value="3" min="1" max="50">
-        <button class="btn btn-primary" onclick="iniciarProceso()">🚀 Iniciar Ciclo</button>
+        <button class="btn btn-primary" onclick="iniciarProceso()">🚀 Iniciar</button>
         <button class="btn btn-danger" onclick="detenerProceso()">⏹ Detener</button>
         <button class="btn btn-warning" onclick="recargarIframe()">🔄 Recargar</button>
         <button class="btn btn-success" onclick="limpiarTodo()">🗑️ Limpiar</button>
-    </div>
-
-    <div class="lista-encuestas">
-        <label style="color:#a0aec0; font-weight:600;">📋 Lista de URLs (una por línea - opcional)</label>
-        <textarea id="listaUrls" placeholder="https://encuesta1.com&#10;https://encuesta2.com&#10;https://encuesta3.com"></textarea>
-        <div class="hint">💡 Si pones URLs aquí, el sistema las usará en orden. Si está vacío, usará la URL base y la repetirá.</div>
     </div>
 
     <div class="status-bar">
@@ -381,7 +350,7 @@
     </div>
 
     <div class="log-container" id="logContainer">
-        <div class="log-entry info">📌 Sistema listo. Esperando instrucciones...</div>
+        <div class="log-entry info">📌 Sistema listo. Ingresa una URL y presiona "Iniciar"</div>
     </div>
 
     <div class="frame-container">
@@ -394,678 +363,500 @@
     </div>
 
     <div class="footer">
-        <p>🔒 Ciclo completo: Rellena → Envía → Pasa a la siguiente → Repite</p>
+        <p>🔒 La encuesta se rellena y envía automáticamente. Repite las veces que quieras.</p>
     </div>
+</div>
 
-    <script>
-        // ============================================
-        // CONFIGURACIÓN DE RESPUESTAS COHERENTES
-        // ============================================
+<script>
+    // ============================================================
+    // 🚀 AUTOMATIZADOR DE ENCUESTAS - VERSIÓN DEFINITIVA
+    // ============================================================
 
-        const DATOS = {
-            nombres: ['Ana', 'Carlos', 'María', 'José', 'Laura', 'Pedro', 'Sofía', 'Luis', 'Elena', 'Miguel', 
-                     'Carmen', 'Javier', 'Patricia', 'Roberto', 'Isabel', 'Andrés', 'Raquel', 'David', 'Marta', 'Pablo',
-                     'Lucía', 'Diego', 'Paula', 'Alejandro', 'Natalia', 'Sergio', 'Andrea', 'Manuel', 'Valentina', 'Carlos'],
-            apellidos: ['García', 'Martínez', 'López', 'Rodríguez', 'Fernández', 'González', 'Pérez', 'Sánchez',
-                       'Ramírez', 'Torres', 'Rivera', 'Morales', 'Ortiz', 'Cruz', 'Reyes', 'Gutiérrez', 'Mendoza'],
-            dominios: ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'protonmail.com', 'icloud.com'],
-            generos: ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir'],
-            satisfaccion: ['Muy satisfecho', 'Satisfecho', 'Neutral', 'Insatisfecho', 'Muy insatisfecho'],
-            frecuencia: ['Diario', 'Semanal', 'Mensual', 'Raramente', 'Nunca'],
-            si_no: ['Sí', 'No', 'Tal vez'],
-            numeros: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-            edades: Array.from({length: 48}, (_, i) => i + 18),
-            comentarios: [
-                'Excelente servicio, muy recomendable',
-                'Buena experiencia en general, volvería a usar el servicio',
-                'Regular, esperaba más atención al cliente',
-                'Muy contento con el resultado obtenido',
-                'Podría mejorar en algunos detalles pero en general bien',
-                'El servicio cumple con lo esperado, sin quejas',
-                'No tengo quejas, todo funcionó perfectamente',
-                'La atención fue rápida y eficiente',
-                'Me gusta la calidad del producto/servicio',
-                'Los precios son competitivos y accesibles',
-                'Volveré a usar el servicio sin dudas',
-                'Recomiendo a todos este servicio',
-                'Excelente relación calidad-precio',
-                'Muy profesional y confiable',
-                'Superó mis expectativas'
-            ]
-        };
+    // ========== DATOS COHERENTES ==========
+    const DATOS = {
+        nombres: ['Ana','Carlos','María','José','Laura','Pedro','Sofía','Luis','Elena','Miguel',
+                  'Carmen','Javier','Patricia','Roberto','Isabel','Andrés','Raquel','David','Marta','Pablo'],
+        apellidos: ['García','Martínez','López','Rodríguez','Fernández','González','Pérez','Sánchez',
+                    'Ramírez','Torres','Rivera','Morales','Ortiz','Cruz','Reyes','Gutiérrez','Mendoza'],
+        dominios: ['gmail.com','yahoo.com','hotmail.com','outlook.com','protonmail.com','icloud.com'],
+        generos: ['Masculino','Femenino','Otro','Prefiero no decir'],
+        satisfaccion: ['Muy satisfecho','Satisfecho','Neutral','Insatisfecho','Muy insatisfecho'],
+        frecuencia: ['Diario','Semanal','Mensual','Raramente','Nunca'],
+        si_no: ['Sí','No','Tal vez'],
+        numeros: ['1','2','3','4','5','6','7','8','9','10'],
+        edades: Array.from({length: 48}, (_, i) => i + 18),
+        comentarios: [
+            'Excelente servicio, muy recomendable',
+            'Buena experiencia en general, volvería a usar el servicio',
+            'Regular, esperaba más atención al cliente',
+            'Muy contento con el resultado obtenido',
+            'Podría mejorar en algunos detalles pero en general bien',
+            'El servicio cumple con lo esperado, sin quejas',
+            'No tengo quejas, todo funcionó perfectamente',
+            'La atención fue rápida y eficiente',
+            'Me gusta la calidad del producto/servicio',
+            'Los precios son competitivos y accesibles',
+            'Volveré a usar el servicio sin dudas',
+            'Recomiendo a todos este servicio',
+            'Excelente relación calidad-precio',
+            'Muy profesional y confiable',
+            'Superó mis expectativas'
+        ]
+    };
 
-        // ============================================
-        // VARIABLES GLOBALES
-        // ============================================
+    function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function generarNombre() { return random(DATOS.nombres) + ' ' + random(DATOS.apellidos); }
+    function generarEmail() { return random(DATOS.nombres).toLowerCase() + '.' + random(DATOS.apellidos).toLowerCase() + Math.floor(Math.random() * 999) + '@' + random(DATOS.dominios); }
+    function generarEdad() { return random(DATOS.edades); }
+    function generarGenero() { return random(DATOS.generos); }
+    function generarSatisfaccion() { return random(DATOS.satisfaccion); }
+    function generarFrecuencia() { return random(DATOS.frecuencia); }
+    function generarSiNo() { return random(DATOS.si_no); }
+    function generarCalificacion() { return random(DATOS.numeros); }
+    function generarComentario() { return random(DATOS.comentarios); }
 
-        let procesoActivo = false;
-        let contadorCompletadas = 0;
-        let totalPendientes = 0;
-        let cicloEnEjecucion = false;
-        let detenerSolicitado = false;
-        let listaUrls = [];
-        let indiceUrlActual = 0;
+    // ========== VARIABLES GLOBALES ==========
+    let procesoActivo = false;
+    let contadorCompletadas = 0;
+    let totalPendientes = 0;
+    let detenerSolicitado = false;
+    let cicloEnEjecucion = false;
 
-        // ============================================
-        // FUNCIONES DE GENERACIÓN DE DATOS
-        // ============================================
+    // ========== FUNCIONES DE UI ==========
+    function agregarLog(mensaje, tipo = 'info') {
+        const container = document.getElementById('logContainer');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${tipo}`;
+        const timestamp = new Date().toLocaleTimeString();
+        entry.textContent = `[${timestamp}] ${mensaje}`;
+        container.appendChild(entry);
+        container.scrollTop = container.scrollHeight;
+        while (container.children.length > 50) container.removeChild(container.firstChild);
+    }
 
-        function randomItem(arr) {
-            return arr[Math.floor(Math.random() * arr.length)];
-        }
+    function actualizarEstado(texto, color = '#48bb78') {
+        document.getElementById('estadoTexto').textContent = texto;
+        document.getElementById('estadoTexto').style.color = color;
+    }
 
-        function generarNombre() {
-            return `${randomItem(DATOS.nombres)} ${randomItem(DATOS.apellidos)}`;
-        }
+    function actualizarProgreso(porcentaje) {
+        const bar = document.getElementById('progressBar');
+        const fill = document.getElementById('progressFill');
+        bar.style.display = 'block';
+        fill.style.width = Math.min(porcentaje, 100) + '%';
+    }
 
-        function generarEmail() {
-            const nombre = randomItem(DATOS.nombres).toLowerCase();
-            const apellido = randomItem(DATOS.apellidos).toLowerCase();
-            const num = Math.floor(Math.random() * 999);
-            return `${nombre}.${apellido}${num}@${randomItem(DATOS.dominios)}`;
-        }
+    function actualizarContadores(completadas, pendientes) {
+        document.getElementById('contadorEnvios').textContent = completadas;
+        document.getElementById('contadorPendientes').textContent = pendientes;
+    }
 
-        function generarEdad() {
-            return randomItem(DATOS.edades);
-        }
+    function actualizarUrlActual(url) {
+        const el = document.getElementById('urlActual');
+        el.textContent = url ? (url.length > 40 ? url.substring(0, 40) + '...' : url) : '-';
+    }
 
-        function generarGenero() {
-            return randomItem(DATOS.generos);
-        }
+    function mostrarOverlay(texto, subtexto = '', mostrar = true) {
+        const overlay = document.getElementById('frameOverlay');
+        document.getElementById('overlayTexto').textContent = texto;
+        document.getElementById('overlaySubtext').textContent = subtexto || 'Por favor espera...';
+        overlay.style.display = mostrar ? 'block' : 'none';
+    }
 
-        function generarSatisfaccion() {
-            return randomItem(DATOS.satisfaccion);
-        }
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-        function generarFrecuencia() {
-            return randomItem(DATOS.frecuencia);
-        }
+    function recargarIframe() {
+        const iframe = document.getElementById('frameEncuesta');
+        const url = document.getElementById('urlEncuesta').value.trim();
+        if (url) { iframe.src = url; agregarLog('🔄 Recargando: ' + url, 'info'); }
+    }
 
-        function generarSiNo() {
-            return randomItem(DATOS.si_no);
-        }
+    function limpiarTodo() {
+        detenerProceso();
+        contadorCompletadas = 0;
+        totalPendientes = 0;
+        actualizarContadores(0, 0);
+        actualizarEstado('🧹 Limpiado', '#a0aec0');
+        document.getElementById('progressBar').style.display = 'none';
+        document.getElementById('progressFill').style.width = '0%';
+        mostrarOverlay('', '', false);
+        agregarLog('🧹 Sistema limpiado', 'warning');
+    }
 
-        function generarCalificacion() {
-            return randomItem(DATOS.numeros);
-        }
-
-        function generarComentario() {
-            return randomItem(DATOS.comentarios);
-        }
-
-        // ============================================
-        // FUNCIONES DE LOG Y UI
-        // ============================================
-
-        function agregarLog(mensaje, tipo = 'info') {
-            const container = document.getElementById('logContainer');
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${tipo}`;
-            const timestamp = new Date().toLocaleTimeString();
-            entry.textContent = `[${timestamp}] ${mensaje}`;
-            container.appendChild(entry);
-            container.scrollTop = container.scrollHeight;
-            while (container.children.length > 50) {
-                container.removeChild(container.firstChild);
-            }
-        }
-
-        function actualizarEstado(texto, color = '#48bb78') {
-            const estado = document.getElementById('estadoTexto');
-            estado.textContent = texto;
-            estado.style.color = color;
-        }
-
-        function actualizarProgreso(porcentaje) {
-            const bar = document.getElementById('progressBar');
-            const fill = document.getElementById('progressFill');
-            bar.style.display = 'block';
-            fill.style.width = Math.min(porcentaje, 100) + '%';
-        }
-
-        function actualizarContadores(completadas, pendientes) {
-            document.getElementById('contadorEnvios').textContent = completadas;
-            document.getElementById('contadorPendientes').textContent = pendientes;
-        }
-
-        function actualizarUrlActual(url) {
-            const el = document.getElementById('urlActual');
-            if (url && url.length > 40) {
-                el.textContent = url.substring(0, 40) + '...';
-            } else {
-                el.textContent = url || '-';
-            }
-        }
-
-        function mostrarOverlay(texto, subtexto = '', mostrar = true) {
-            const overlay = document.getElementById('frameOverlay');
-            const textoEl = document.getElementById('overlayTexto');
-            const subtextoEl = document.getElementById('overlaySubtext');
-            if (mostrar) {
-                textoEl.textContent = texto;
-                subtextoEl.textContent = subtexto || 'Por favor espera...';
-                overlay.style.display = 'block';
-            } else {
-                overlay.style.display = 'none';
-            }
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function recargarIframe() {
+    // ========== FUNCIÓN PRINCIPAL: RELLENAR ENCUESTA ==========
+    function rellenarEncuesta() {
+        try {
             const iframe = document.getElementById('frameEncuesta');
-            const url = document.getElementById('urlEncuesta').value.trim();
-            if (url) {
-                iframe.src = url;
-                agregarLog('🔄 Recargando iframe: ' + url, 'info');
-                mostrarOverlay('Cargando encuesta...', '');
-                setTimeout(() => {
-                    mostrarOverlay('', '', false);
-                }, 4000);
-            } else {
-                agregarLog('❌ No hay URL para recargar', 'error');
-            }
-        }
-
-        function limpiarTodo() {
-            detenerProceso();
-            contadorCompletadas = 0;
-            totalPendientes = 0;
-            indiceUrlActual = 0;
-            actualizarContadores(0, 0);
-            actualizarEstado('🧹 Todo limpiado', '#a0aec0');
-            actualizarUrlActual('-');
-            document.getElementById('progressBar').style.display = 'none';
-            document.getElementById('progressFill').style.width = '0%';
-            mostrarOverlay('', '', false);
-            agregarLog('🧹 Sistema limpiado', 'warning');
-        }
-
-        // ============================================
-        // FUNCIÓN: OBTENER SIGUIENTE URL
-        // ============================================
-
-        function obtenerSiguienteUrl() {
-            // Si hay lista de URLs, usarla
-            const listaText = document.getElementById('listaUrls').value.trim();
-            if (listaText) {
-                const urls = listaText.split('\n').map(u => u.trim()).filter(u => u);
-                if (urls.length > 0) {
-                    if (indiceUrlActual < urls.length) {
-                        const url = urls[indiceUrlActual];
-                        indiceUrlActual++;
-                        return url;
-                    } else {
-                        return null; // No hay más URLs
-                    }
-                }
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            if (!doc || !doc.body || doc.body.children.length === 0) {
+                agregarLog('⚠️ Iframe no cargado', 'warning');
+                return 0;
             }
 
-            // Si no hay lista, usar URL base
-            const urlBase = document.getElementById('urlEncuesta').value.trim();
-            if (urlBase) {
-                if (indiceUrlActual < totalPendientes) {
-                    indiceUrlActual++;
-                    return urlBase;
-                }
-                return null;
-            }
+            agregarLog('📝 Rellenando encuesta...', 'info');
+            let camposRellenados = 0;
+            let errores = 0;
 
-            return null;
-        }
-
-        // ============================================
-        // FUNCIÓN: RELLENAR Y ENVIAR ENCUESTA
-        // ============================================
-
-        function rellenarYEnviarEncuesta() {
-            return new Promise((resolve) => {
+            const elementos = doc.querySelectorAll('input, textarea, select');
+            
+            elementos.forEach((el) => {
                 try {
-                    const iframe = document.getElementById('frameEncuesta');
-                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (el.type === 'hidden' || el.disabled) return;
+                    if (el.offsetParent === null) return;
                     
-                    if (!doc || !doc.body || doc.body.children.length === 0) {
-                        agregarLog('⚠️ Iframe no cargado correctamente', 'warning');
-                        resolve({ exito: false, motivo: 'iframe_no_cargado' });
-                        return;
-                    }
-
-                    agregarLog('📝 Rellenando encuesta', 'info');
-                    let camposRellenados = 0;
-
-                    // ========== 1. RELLENAR CAMPOS ==========
-                    const inputs = doc.querySelectorAll('input, textarea, select');
+                    const tipo = el.type ? el.type.toLowerCase() : '';
+                    const tag = el.tagName.toLowerCase();
+                    const name = (el.name || '').toLowerCase();
+                    const id = (el.id || '').toLowerCase();
+                    const placeholder = (el.placeholder || '').toLowerCase();
+                    const textoCompleto = name + ' ' + id + ' ' + placeholder;
                     
-                    inputs.forEach((elemento) => {
-                        try {
-                            if (elemento.type === 'hidden' || elemento.disabled) return;
-                            if (elemento.offsetParent === null) return;
-                            
-                            const tipo = elemento.type ? elemento.type.toLowerCase() : '';
-                            const tag = elemento.tagName.toLowerCase();
-                            const name = (elemento.name || '').toLowerCase();
-                            const id = (elemento.id || '').toLowerCase();
-                            const placeholder = (elemento.placeholder || '').toLowerCase();
-                            const textoCompleto = name + ' ' + id + ' ' + placeholder;
-                            
-                            // --- TEXT / EMAIL / TEL ---
-                            if (tipo === 'text' || tipo === 'email' || tipo === 'tel' || tipo === 'url') {
-                                let respuesta = '';
-                                if (textoCompleto.includes('nombre') || textoCompleto.includes('name')) {
-                                    respuesta = generarNombre();
-                                } else if (textoCompleto.includes('email') || textoCompleto.includes('correo')) {
-                                    respuesta = generarEmail();
-                                } else if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
-                                    respuesta = String(generarEdad());
-                                } else if (textoCompleto.includes('tel') || textoCompleto.includes('phone') || textoCompleto.includes('telefono')) {
-                                    respuesta = '3' + String(Math.floor(Math.random() * 900000000) + 100000000);
-                                } else if (textoCompleto.includes('ciudad') || textoCompleto.includes('city')) {
-                                    respuesta = randomItem(['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Buenos Aires', 'Ciudad de México', 'Madrid', 'Santiago', 'Lima']);
-                                } else {
-                                    respuesta = generarComentario().substring(0, 50);
-                                }
-                                if (respuesta) {
-                                    elemento.value = respuesta;
-                                    elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                                    elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                    camposRellenados++;
-                                }
-                            }
-                            
-                            // --- NUMBER ---
-                            else if (tipo === 'number') {
-                                let respuesta = '';
-                                if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
-                                    respuesta = String(generarEdad());
-                                } else if (textoCompleto.includes('calif') || textoCompleto.includes('rating') || textoCompleto.includes('puntuacion')) {
-                                    respuesta = generarCalificacion();
-                                } else {
-                                    respuesta = String(Math.floor(Math.random() * 10) + 1);
-                                }
-                                elemento.value = respuesta;
-                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                camposRellenados++;
-                            }
-                            
-                            // --- RADIO ---
-                            else if (tipo === 'radio') {
-                                const nameRadio = elemento.name;
-                                if (nameRadio && !elemento.checked) {
-                                    const grupo = doc.querySelectorAll(`input[name="${nameRadio}"]`);
-                                    const opcionesDisponibles = Array.from(grupo).filter(el => !el.disabled && el.offsetParent !== null);
-                                    if (opcionesDisponibles.length > 0) {
-                                        const elegido = randomItem(opcionesDisponibles);
-                                        elegido.checked = true;
-                                        elegido.dispatchEvent(new Event('change', { bubbles: true }));
-                                        elegido.dispatchEvent(new Event('click', { bubbles: true }));
-                                        camposRellenados++;
-                                    }
-                                }
-                            }
-                            
-                            // --- CHECKBOX ---
-                            else if (tipo === 'checkbox') {
-                                if (Math.random() > 0.4) {
-                                    elemento.checked = true;
-                                    elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                    elemento.dispatchEvent(new Event('click', { bubbles: true }));
-                                    camposRellenados++;
-                                }
-                            }
-                            
-                            // --- SELECT ---
-                            else if (tag === 'select') {
-                                const opciones = Array.from(elemento.options).filter(opt => opt.value && !opt.disabled);
-                                if (opciones.length > 0) {
-                                    const elegida = randomItem(opciones);
-                                    elemento.value = elegida.value;
-                                    elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                    camposRellenados++;
-                                }
-                            }
-                            
-                            // --- TEXTAREA ---
-                            else if (tag === 'textarea') {
-                                let respuesta = generarComentario();
-                                const rows = parseInt(elemento.rows) || 3;
-                                if (rows <= 2) respuesta = respuesta.substring(0, 30);
-                                elemento.value = respuesta;
-                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                camposRellenados++;
-                            }
-                            
-                            // --- RANGE ---
-                            else if (tipo === 'range') {
-                                const min = parseFloat(elemento.min) || 1;
-                                const max = parseFloat(elemento.max) || 10;
-                                const valor = Math.floor(Math.random() * (max - min + 1)) + min;
-                                elemento.value = valor;
-                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                camposRellenados++;
-                            }
-                            
-                            // --- DATE ---
-                            else if (tipo === 'date') {
-                                const year = Math.floor(Math.random() * (2025 - 1990)) + 1990;
-                                const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-                                const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
-                                elemento.value = `${year}-${month}-${day}`;
-                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                camposRellenados++;
-                            }
-                            
-                        } catch (e) {
-                            // Error individual, continuar
+                    // === TEXT / EMAIL / TEL / URL ===
+                    if (tipo === 'text' || tipo === 'email' || tipo === 'tel' || tipo === 'url') {
+                        let respuesta = '';
+                        if (textoCompleto.includes('nombre') || textoCompleto.includes('name')) {
+                            respuesta = generarNombre();
+                        } else if (textoCompleto.includes('email') || textoCompleto.includes('correo')) {
+                            respuesta = generarEmail();
+                        } else if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
+                            respuesta = String(generarEdad());
+                        } else if (textoCompleto.includes('tel') || textoCompleto.includes('phone')) {
+                            respuesta = '3' + String(Math.floor(Math.random() * 900000000) + 100000000);
+                        } else if (textoCompleto.includes('ciudad') || textoCompleto.includes('city')) {
+                            respuesta = random(['Bogotá','Medellín','Cali','Barranquilla','Cartagena','Buenos Aires','Ciudad de México','Madrid','Santiago','Lima']);
+                        } else {
+                            respuesta = generarComentario().substring(0, 50);
                         }
-                    });
-
-                    agregarLog(`✅ Campos rellenados: ${camposRellenados}`, 'success');
-
-                    // ========== 2. BUSCAR BOTÓN DE ENVÍO ==========
-                    const botones = doc.querySelectorAll('input[type="submit"], button[type="submit"], button:not([type]), .btn-submit, .submit, [role="button"]');
-                    let botonEncontrado = null;
+                        if (respuesta) {
+                            el.value = respuesta;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                            camposRellenados++;
+                        }
+                    }
                     
-                    for (const btn of botones) {
-                        if (btn.offsetParent !== null && !btn.disabled) {
-                            const texto = (btn.textContent || btn.value || '').toLowerCase();
-                            if (texto.includes('enviar') || texto.includes('submit') || texto.includes('envi') || 
-                                texto.includes('send') || texto.includes('aceptar') || texto.includes('ok') || 
-                                texto.includes('continuar') || texto.includes('siguiente') || texto.includes('finalizar')) {
-                                botonEncontrado = btn;
-                                break;
+                    // === NUMBER ===
+                    else if (tipo === 'number') {
+                        let respuesta = '';
+                        if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
+                            respuesta = String(generarEdad());
+                        } else if (textoCompleto.includes('calif') || textoCompleto.includes('rating') || textoCompleto.includes('puntuacion')) {
+                            respuesta = generarCalificacion();
+                        } else {
+                            respuesta = String(Math.floor(Math.random() * 10) + 1);
+                        }
+                        el.value = respuesta;
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        camposRellenados++;
+                    }
+                    
+                    // === RADIO ===
+                    else if (tipo === 'radio') {
+                        const nameRadio = el.name;
+                        if (nameRadio && !el.checked) {
+                            const grupo = doc.querySelectorAll(`input[name="${nameRadio}"]`);
+                            const opciones = Array.from(grupo).filter(e => !e.disabled && e.offsetParent !== null);
+                            if (opciones.length > 0) {
+                                const elegido = random(opciones);
+                                elegido.checked = true;
+                                elegido.dispatchEvent(new Event('change', { bubbles: true }));
+                                elegido.dispatchEvent(new Event('click', { bubbles: true }));
+                                camposRellenados++;
                             }
                         }
                     }
-
-                    if (!botonEncontrado) {
-                        for (const btn of botones) {
-                            if (btn.offsetParent !== null && !btn.disabled) {
-                                botonEncontrado = btn;
-                                break;
-                            }
+                    
+                    // === CHECKBOX ===
+                    else if (tipo === 'checkbox') {
+                        if (Math.random() > 0.4) {
+                            el.checked = true;
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                            el.dispatchEvent(new Event('click', { bubbles: true }));
+                            camposRellenados++;
                         }
                     }
-
-                    if (botonEncontrado) {
-                        agregarLog('📤 Haciendo clic en botón de envío...', 'info');
-                        botonEncontrado.click();
-                        
-                        // Esperar confirmación
-                        setTimeout(() => {
-                            const confirmado = verificarConfirmacion(doc);
-                            if (confirmado) {
-                                contadorCompletadas++;
-                                totalPendientes--;
-                                actualizarContadores(contadorCompletadas, totalPendientes);
-                                agregarLog(`✅ Encuesta #${contadorCompletadas} COMPLETADA con éxito`, 'success');
-                                resolve({ exito: true, mensaje: 'Encuesta enviada y confirmada' });
-                            } else {
-                                agregarLog('⚠️ No se detectó confirmación, pero se intentó enviar', 'warning');
-                                resolve({ exito: false, motivo: 'sin_confirmacion' });
-                            }
-                        }, 3000);
-                        
-                    } else {
-                        agregarLog('❌ No se encontró botón de envío', 'error');
-                        resolve({ exito: false, motivo: 'sin_boton' });
+                    
+                    // === SELECT ===
+                    else if (tag === 'select') {
+                        const opciones = Array.from(el.options).filter(opt => opt.value && !opt.disabled);
+                        if (opciones.length > 0) {
+                            const elegida = random(opciones);
+                            el.value = elegida.value;
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                            camposRellenados++;
+                        }
                     }
-
-                } catch (error) {
-                    agregarLog('❌ Error: ' + error.message, 'error');
-                    resolve({ exito: false, motivo: 'error: ' + error.message });
+                    
+                    // === TEXTAREA ===
+                    else if (tag === 'textarea') {
+                        let respuesta = generarComentario();
+                        const rows = parseInt(el.rows) || 3;
+                        if (rows <= 2) respuesta = respuesta.substring(0, 30);
+                        el.value = respuesta;
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        camposRellenados++;
+                    }
+                    
+                    // === RANGE ===
+                    else if (tipo === 'range') {
+                        const min = parseFloat(el.min) || 1;
+                        const max = parseFloat(el.max) || 10;
+                        const valor = Math.floor(Math.random() * (max - min + 1)) + min;
+                        el.value = valor;
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        camposRellenados++;
+                    }
+                    
+                    // === DATE ===
+                    else if (tipo === 'date') {
+                        const year = Math.floor(Math.random() * (2025 - 1990)) + 1990;
+                        const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+                        const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+                        el.value = `${year}-${month}-${day}`;
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        camposRellenados++;
+                    }
+                    
+                } catch (e) {
+                    errores++;
                 }
             });
+
+            agregarLog(`✅ Campos rellenados: ${camposRellenados}`, 'success');
+            return camposRellenados;
+
+        } catch (error) {
+            agregarLog('❌ Error: ' + error.message, 'error');
+            return 0;
         }
+    }
 
-        // ============================================
-        // VERIFICAR CONFIRMACIÓN
-        // ============================================
+    // ========== ENVIAR ENCUESTA ==========
+    function enviarEncuesta() {
+        try {
+            const iframe = document.getElementById('frameEncuesta');
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            if (!doc) return false;
 
-        function verificarConfirmacion(doc) {
-            try {
-                const textosConfirmacion = ['gracias', 'enviado', 'completado', 'success', 'confirmación', 'confirmacion', 
-                                           'éxito', 'exito', 'thank', 'received', 'recibido', 'aceptado', 'ok'];
-                const bodyText = doc.body ? doc.body.textContent.toLowerCase() : '';
-                const contieneConfirmacion = textosConfirmacion.some(t => bodyText.includes(t));
-                
-                if (contieneConfirmacion) {
-                    return true;
-                }
-                
-                const elementosConfirmacion = doc.querySelectorAll('.success, .thank-you, .confirmation, .gracias, [role="alert"]');
-                for (const el of elementosConfirmacion) {
-                    if (el.offsetParent !== null) {
-                        return true;
-                    }
-                }
-                
-                return false;
-            } catch (e) {
-                return false;
-            }
-        }
-
-        // ============================================
-        // CICLO COMPLETO: Rellenar → Enviar → Siguiente
-        // ============================================
-
-        async function ejecutarCicloCompleto() {
-            if (cicloEnEjecucion) return;
-            cicloEnEjecucion = true;
-
-            const veces = parseInt(document.getElementById('numVeces').value) || 3;
-            totalPendientes = veces;
-            indiceUrlActual = 0;
-            actualizarContadores(0, veces);
-            actualizarProgreso(0);
-
-            agregarLog(`🚀 INICIANDO CICLO: ${veces} encuesta(s)`, 'info');
-            agregarLog(`📌 Usando navegación automática entre encuestas`, 'info');
-            actualizarEstado(`🔄 Procesando 0/${veces}...`, '#667eea');
-
-            let ejecutadas = 0;
-            let fallosConsecutivos = 0;
-            const MAX_FALLOS = 3;
-
-            while (ejecutadas < veces && !detenerSolicitado && fallosConsecutivos < MAX_FALLOS) {
-                // ========== OBTENER SIGUIENTE URL ==========
-                const urlActual = obtenerSiguienteUrl();
-                
-                if (!urlActual) {
-                    agregarLog('❌ No hay más URLs disponibles', 'error');
+            const botones = doc.querySelectorAll('input[type="submit"], button[type="submit"], button:not([type]), .btn-submit, .submit, [role="button"]');
+            let boton = null;
+            
+            for (const btn of botones) {
+                if (btn.offsetParent === null || btn.disabled) continue;
+                const texto = (btn.textContent || btn.value || '').toLowerCase();
+                if (texto.includes('enviar') || texto.includes('submit') || texto.includes('send') || 
+                    texto.includes('aceptar') || texto.includes('ok') || texto.includes('continuar') || 
+                    texto.includes('siguiente') || texto.includes('finalizar') || texto.includes('envi')) {
+                    boton = btn;
                     break;
                 }
+            }
+            
+            if (!boton) {
+                for (const btn of botones) {
+                    if (btn.offsetParent !== null && !btn.disabled) {
+                        boton = btn;
+                        break;
+                    }
+                }
+            }
+            
+            if (boton) {
+                boton.click();
+                agregarLog('📤 Encuesta enviada!', 'success');
+                return true;
+            } else {
+                agregarLog('❌ No se encontró botón de envío', 'error');
+                return false;
+            }
+        } catch (error) {
+            agregarLog('❌ Error al enviar: ' + error.message, 'error');
+            return false;
+        }
+    }
 
-                ejecutadas++;
-                const porcentaje = (ejecutadas / veces) * 100;
-                actualizarProgreso(porcentaje);
-                actualizarEstado(`🔄 Procesando ${ejecutadas}/${veces}...`, '#667eea');
-                actualizarUrlActual(urlActual);
-                mostrarOverlay(`📝 Encuesta ${ejecutadas}/${veces}`, `Cargando: ${urlActual.substring(0, 50)}...`);
+    // ========== VERIFICAR CONFIRMACIÓN ==========
+    function verificarConfirmacion() {
+        try {
+            const iframe = document.getElementById('frameEncuesta');
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!doc) return false;
+            
+            const textos = ['gracias', 'enviado', 'completado', 'success', 'confirmación', 'confirmacion', 
+                           'éxito', 'exito', 'thank', 'received', 'recibido', 'aceptado'];
+            const bodyText = doc.body ? doc.body.textContent.toLowerCase() : '';
+            return textos.some(t => bodyText.includes(t));
+        } catch (e) { return false; }
+    }
 
-                agregarLog(`📋 Cargando encuesta ${ejecutadas}/${veces}: ${urlActual}`, 'info');
+    // ========== CICLO COMPLETO ==========
+    async function ejecutarCicloCompleto() {
+        if (cicloEnEjecucion) return;
+        cicloEnEjecucion = true;
 
-                // ========== CARGAR IFRAME ==========
-                const iframe = document.getElementById('frameEncuesta');
-                iframe.src = urlActual;
+        const veces = parseInt(document.getElementById('numVeces').value) || 3;
+        totalPendientes = veces;
+        contadorCompletadas = 0;
+        actualizarContadores(0, veces);
+        actualizarProgreso(0);
 
-                // Esperar carga
-                let cargaExitosa = false;
-                let intentosCarga = 0;
-                const MAX_INTENTOS_CARGA = 15;
+        agregarLog(`🚀 INICIANDO: ${veces} encuesta(s)`, 'info');
+        actualizarEstado(`🔄 Procesando 0/${veces}...`, '#667eea');
 
-                await new Promise((resolve) => {
-                    const checkCarga = setInterval(() => {
-                        intentosCarga++;
-                        try {
-                            const doc = iframe.contentDocument || iframe.contentWindow.document;
-                            if (doc && doc.body && doc.body.children.length > 0) {
-                                clearInterval(checkCarga);
-                                cargaExitosa = true;
-                                agregarLog('✅ Iframe cargado correctamente', 'success');
-                                resolve();
-                            }
-                        } catch (e) {
-                            if (intentosCarga >= MAX_INTENTOS_CARGA) {
-                                clearInterval(checkCarga);
-                                agregarLog('⚠️ Carga parcial, continuando...', 'warning');
-                                resolve();
-                            }
-                        }
-                    }, 1000);
-                });
+        let ejecutadas = 0;
+        let fallos = 0;
+        const MAX_FALLOS = 3;
 
-                await sleep(1500);
-                mostrarOverlay(`📝 Rellenando ${ejecutadas}/${veces}`, 'Completando campos...');
+        while (ejecutadas < veces && !detenerSolicitado && fallos < MAX_FALLOS) {
+            ejecutadas++;
+            const porcentaje = (ejecutadas / veces) * 100;
+            actualizarProgreso(porcentaje);
+            actualizarEstado(`🔄 Rellenando ${ejecutadas}/${veces}...`, '#667eea');
+            
+            const url = document.getElementById('urlEncuesta').value.trim();
+            actualizarUrlActual(url);
+            mostrarOverlay(`📝 Encuesta ${ejecutadas}/${veces}`, 'Cargando...');
 
-                // ========== RELLENAR Y ENVIAR ==========
-                const resultado = await rellenarYEnviarEncuesta();
+            // Cargar iframe
+            const iframe = document.getElementById('frameEncuesta');
+            iframe.src = url;
 
-                if (resultado.exito) {
-                    fallosConsecutivos = 0;
+            // Esperar carga
+            let cargado = false;
+            for (let i = 0; i < 15; i++) {
+                await sleep(1000);
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (doc && doc.body && doc.body.children.length > 0) {
+                        cargado = true;
+                        break;
+                    }
+                } catch (e) {}
+            }
+
+            if (!cargado) {
+                agregarLog(`⚠️ No se pudo cargar encuesta ${ejecutadas}`, 'warning');
+                fallos++;
+                continue;
+            }
+
+            await sleep(1500);
+            mostrarOverlay(`📝 Rellenando ${ejecutadas}/${veces}`, 'Completando campos...');
+
+            // RELLENAR
+            const rellenados = rellenarEncuesta();
+            
+            if (rellenados === 0) {
+                fallos++;
+                agregarLog(`⚠️ No se rellenaron campos en ${ejecutadas}`, 'warning');
+                continue;
+            }
+
+            await sleep(2000);
+
+            // ENVIAR
+            mostrarOverlay(`📤 Enviando ${ejecutadas}/${veces}`, '');
+            const enviado = enviarEncuesta();
+
+            if (enviado) {
+                await sleep(3000);
+                // Verificar confirmación
+                const confirmado = verificarConfirmacion();
+                if (confirmado) {
+                    contadorCompletadas++;
+                    totalPendientes--;
+                    actualizarContadores(contadorCompletadas, totalPendientes);
                     agregarLog(`✅ Encuesta ${ejecutadas} COMPLETADA`, 'success');
+                    fallos = 0;
                 } else {
-                    fallosConsecutivos++;
-                    agregarLog(`⚠️ Encuesta ${ejecutadas} fallida (${fallosConsecutivos}/${MAX_FALLOS})`, 'warning');
+                    agregarLog(`⚠️ Encuesta ${ejecutadas} sin confirmación`, 'warning');
                 }
-
-                // ========== PASAR A LA SIGUIENTE ==========
-                if (ejecutadas < veces && !detenerSolicitado) {
-                    agregarLog(`🔄 Pasando a la siguiente encuesta... (${ejecutadas + 1}/${veces})`, 'info');
-                    mostrarOverlay(`🔄 Siguiente encuesta ${ejecutadas + 1}/${veces}`, 'Preparando...');
-                    await sleep(2000);
-                    mostrarOverlay('', '', false);
-                }
-
-                await sleep(500);
-            }
-
-            // ========== FIN DEL CICLO ==========
-            cicloEnEjecucion = false;
-
-            if (detenerSolicitado) {
-                agregarLog('⏹ Ciclo detenido por el usuario', 'warning');
-                actualizarEstado('⏹ Detenido por usuario', '#fc8181');
-                detenerSolicitado = false;
-            } else if (fallosConsecutivos >= MAX_FALLOS) {
-                agregarLog(`❌ Demasiados fallos (${MAX_FALLOS}), ciclo terminado`, 'error');
-                actualizarEstado('❌ Terminado por fallos', '#fc8181');
             } else {
-                agregarLog(`🎉 CICLO COMPLETADO: ${contadorCompletadas} encuestas enviadas`, 'success');
-                actualizarEstado(`✅ Completado: ${contadorCompletadas} encuestas`, '#48bb78');
-                actualizarProgreso(100);
-                mostrarOverlay('🎉 Proceso completado', `${contadorCompletadas} encuestas enviadas`);
-                setTimeout(() => {
-                    mostrarOverlay('', '', false);
-                }, 5000);
+                fallos++;
+                agregarLog(`⚠️ Fallo al enviar encuesta ${ejecutadas}`, 'error');
             }
 
-            procesoActivo = false;
-            actualizarContadores(contadorCompletadas, 0);
-            document.getElementById('progressFill').style.width = '100%';
-            actualizarUrlActual('Finalizado');
+            // Pausa entre encuestas
+            if (ejecutadas < veces && !detenerSolicitado) {
+                agregarLog(`🔄 Pasando a siguiente (${ejecutadas + 1}/${veces})...`, 'info');
+                mostrarOverlay(`🔄 Siguiente ${ejecutadas + 1}/${veces}`, 'Preparando...');
+                await sleep(3000);
+            }
         }
 
-        // ============================================
-        // INICIAR / DETENER PROCESO
-        // ============================================
+        // FIN
+        cicloEnEjecucion = false;
+        procesoActivo = false;
 
-        function iniciarProceso() {
-            const urlBase = document.getElementById('urlEncuesta').value.trim();
-            const listaText = document.getElementById('listaUrls').value.trim();
-            const veces = parseInt(document.getElementById('numVeces').value) || 3;
-
-            // Verificar que haya al menos una URL
-            let tieneUrl = false;
-            if (urlBase) tieneUrl = true;
-            if (listaText) {
-                const urls = listaText.split('\n').map(u => u.trim()).filter(u => u);
-                if (urls.length > 0) tieneUrl = true;
-            }
-
-            if (!tieneUrl) {
-                alert('❌ Por favor, ingresa al menos una URL (base o en la lista)');
-                agregarLog('❌ Error: No hay URLs disponibles', 'error');
-                return;
-            }
-
-            if (procesoActivo || cicloEnEjecucion) {
-                alert('⚠️ Ya hay un proceso en ejecución');
-                agregarLog('⚠️ Intento de inicio mientras proceso activo', 'warning');
-                return;
-            }
-
-            if (veces < 1 || veces > 50) {
-                alert('⚠️ El número de veces debe ser entre 1 y 50');
-                return;
-            }
-
-            procesoActivo = true;
+        if (detenerSolicitado) {
+            agregarLog('⏹ Detenido por usuario', 'warning');
+            actualizarEstado('⏹ Detenido', '#fc8181');
             detenerSolicitado = false;
-            contadorCompletadas = 0;
-            indiceUrlActual = 0;
-            document.getElementById('contadorEnvios').textContent = '0';
-            document.getElementById('contadorPendientes').textContent = veces;
-
-            agregarLog(`🚀 INICIANDO con ${veces} encuesta(s)`, 'info');
-            if (listaText) {
-                const urls = listaText.split('\n').map(u => u.trim()).filter(u => u);
-                agregarLog(`📋 Usando lista de ${urls.length} URLs`, 'info');
-            } else {
-                agregarLog(`📌 URL base: ${urlBase}`, 'info');
-            }
-
-            // Comenzar el ciclo directamente
-            mostrarOverlay('Iniciando proceso...', 'Preparando el sistema');
-            actualizarEstado('🚀 Iniciando ciclo...', '#48bb78');
-
-            setTimeout(() => {
-                mostrarOverlay('', '', false);
-                ejecutarCicloCompleto();
-            }, 1500);
+        } else if (fallos >= MAX_FALLOS) {
+            agregarLog(`❌ Demasiados fallos (${MAX_FALLOS})`, 'error');
+            actualizarEstado('❌ Terminado por fallos', '#fc8181');
+        } else {
+            agregarLog(`🎉 COMPLETADO: ${contadorCompletadas} encuestas enviadas`, 'completed');
+            actualizarEstado(`✅ ${contadorCompletadas} encuestas completadas`, '#48bb78');
+            actualizarProgreso(100);
+            mostrarOverlay('🎉 Proceso completado', `${contadorCompletadas} encuestas enviadas`);
+            setTimeout(() => mostrarOverlay('', '', false), 5000);
         }
 
-        function detenerProceso() {
-            if (procesoActivo || cicloEnEjecucion) {
-                detenerSolicitado = true;
-                procesoActivo = false;
-                agregarLog('⏹ Deteniendo proceso...', 'warning');
-                actualizarEstado('⏹ Deteniendo...', '#fc8181');
-                mostrarOverlay('⏹ Deteniendo...', 'Finalizando ciclo actual');
-                setTimeout(() => {
-                    mostrarOverlay('', '', false);
-                }, 3000);
-            } else {
-                agregarLog('ℹ️ No hay proceso activo para detener', 'info');
-            }
+        actualizarContadores(contadorCompletadas, 0);
+    }
+
+    // ========== INICIAR / DETENER ==========
+    function iniciarProceso() {
+        const url = document.getElementById('urlEncuesta').value.trim();
+        const veces = parseInt(document.getElementById('numVeces').value) || 3;
+
+        if (!url) {
+            alert('❌ Ingresa una URL de encuesta');
+            agregarLog('❌ URL vacía', 'error');
+            return;
         }
 
-        // ============================================
-        // INICIALIZACIÓN
-        // ============================================
+        if (procesoActivo || cicloEnEjecucion) {
+            alert('⚠️ Ya hay un proceso activo');
+            return;
+        }
 
-        console.log('🤖 Automatizador de Encuestas - Navegación Automática');
-        console.log('📌 Versión: 3.0 - Pasa automáticamente a la siguiente encuesta');
-        console.log('ℹ️ Ingresa URL(s) y presiona "Iniciar Ciclo"');
+        if (veces < 1 || veces > 50) {
+            alert('⚠️ Veces debe ser entre 1 y 50');
+            return;
+        }
 
-        agregarLog('💡 Sistema listo. Ingresa URL(s) y presiona "Iniciar Ciclo"', 'info');
+        procesoActivo = true;
+        detenerSolicitado = false;
+        contadorCompletadas = 0;
+        actualizarContadores(0, veces);
+        agregarLog(`🚀 Iniciando con ${veces} encuesta(s)`, 'info');
+        actualizarEstado('🚀 Iniciando...', '#48bb78');
 
-        // Cargar URL inicial si existe
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputUrl = document.getElementById('urlEncuesta');
-            if (inputUrl.value) {
-                const iframe = document.getElementById('frameEncuesta');
-                iframe.src = inputUrl.value;
-                actualizarUrlActual(inputUrl.value);
-            }
-        });
-    </script>
+        setTimeout(() => ejecutarCicloCompleto(), 1000);
+    }
+
+    function detenerProceso() {
+        if (procesoActivo || cicloEnEjecucion) {
+            detenerSolicitado = true;
+            procesoActivo = false;
+            agregarLog('⏹ Deteniendo...', 'warning');
+            actualizarEstado('⏹ Deteniendo', '#fc8181');
+            mostrarOverlay('⏹ Deteniendo...', '');
+        }
+    }
+
+    // ========== INICIALIZACIÓN ==========
+    console.log('🤖 Automatizador de Encuestas cargado');
+    agregarLog('💡 Ingresa URL y presiona "Iniciar"', 'info');
+</script>
 
 </body>
-</html>
+    </html> 

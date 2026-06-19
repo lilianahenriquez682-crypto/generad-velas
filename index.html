@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Automatizador - Ciclo Completo</title>
+    <title>🤖 Automatizador - Navegación Automática</title>
     <style>
         * {
             margin: 0;
@@ -226,6 +226,11 @@
             color: #f6ad55;
         }
 
+        .log-container .log-entry.completed {
+            color: #9f7aea;
+            font-weight: bold;
+        }
+
         .frame-container {
             background: #1a1f3a;
             border-radius: 15px;
@@ -289,6 +294,37 @@
             font-size: 0.9em;
         }
 
+        .lista-encuestas {
+            background: #1a1f3a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .lista-encuestas textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0d1128;
+            color: white;
+            border: 2px solid #2a2f4a;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .lista-encuestas textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .lista-encuestas .hint {
+            color: #a0aec0;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -313,12 +349,12 @@
 
     <div class="header">
         <h1>🤖 Automatizador de Encuestas</h1>
-        <p>🔁 Ciclo completo: Rellena → Envía → Confirma → Siguiente</p>
-        <span class="badge">✅ Inicio, proceso y fin automático</span>
+        <p>🔄 Navegación automática: Rellena → Envía → Siguiente → Rellena → Envía</p>
+        <span class="badge">✅ Pasa automáticamente a la siguiente encuesta</span>
     </div>
 
     <div class="controls">
-        <input type="text" id="urlEncuesta" placeholder="https://ejemplo.com/encuesta" value="">
+        <input type="text" id="urlEncuesta" placeholder="URL base de la encuesta (ej: https://forms.gle/)" value="">
         <label>Veces:</label>
         <input type="number" id="numVeces" value="3" min="1" max="50">
         <button class="btn btn-primary" onclick="iniciarProceso()">🚀 Iniciar Ciclo</button>
@@ -327,10 +363,17 @@
         <button class="btn btn-success" onclick="limpiarTodo()">🗑️ Limpiar</button>
     </div>
 
+    <div class="lista-encuestas">
+        <label style="color:#a0aec0; font-weight:600;">📋 Lista de URLs (una por línea - opcional)</label>
+        <textarea id="listaUrls" placeholder="https://encuesta1.com&#10;https://encuesta2.com&#10;https://encuesta3.com"></textarea>
+        <div class="hint">💡 Si pones URLs aquí, el sistema las usará en orden. Si está vacío, usará la URL base y la repetirá.</div>
+    </div>
+
     <div class="status-bar">
         <span>📊 Estado: <span class="status-text" id="estadoTexto">Esperando inicio...</span></span>
         <span class="counter">📝 Completadas: <span id="contadorEnvios">0</span></span>
         <span class="counter">⏳ Pendientes: <span id="contadorPendientes">0</span></span>
+        <span class="counter">📌 Actual: <span id="urlActual">-</span></span>
     </div>
 
     <div class="progress-bar" id="progressBar">
@@ -351,7 +394,7 @@
     </div>
 
     <div class="footer">
-        <p>🔒 Ciclo completo: Rellena → Envía → Espera confirmación → Siguiente</p>
+        <p>🔒 Ciclo completo: Rellena → Envía → Pasa a la siguiente → Repite</p>
     </div>
 
     <script>
@@ -400,6 +443,8 @@
         let totalPendientes = 0;
         let cicloEnEjecucion = false;
         let detenerSolicitado = false;
+        let listaUrls = [];
+        let indiceUrlActual = 0;
 
         // ============================================
         // FUNCIONES DE GENERACIÓN DE DATOS
@@ -460,7 +505,6 @@
             entry.textContent = `[${timestamp}] ${mensaje}`;
             container.appendChild(entry);
             container.scrollTop = container.scrollHeight;
-            // Mantener solo los últimos 50 logs
             while (container.children.length > 50) {
                 container.removeChild(container.firstChild);
             }
@@ -482,6 +526,15 @@
         function actualizarContadores(completadas, pendientes) {
             document.getElementById('contadorEnvios').textContent = completadas;
             document.getElementById('contadorPendientes').textContent = pendientes;
+        }
+
+        function actualizarUrlActual(url) {
+            const el = document.getElementById('urlActual');
+            if (url && url.length > 40) {
+                el.textContent = url.substring(0, 40) + '...';
+            } else {
+                el.textContent = url || '-';
+            }
         }
 
         function mostrarOverlay(texto, subtexto = '', mostrar = true) {
@@ -520,12 +573,47 @@
             detenerProceso();
             contadorCompletadas = 0;
             totalPendientes = 0;
+            indiceUrlActual = 0;
             actualizarContadores(0, 0);
             actualizarEstado('🧹 Todo limpiado', '#a0aec0');
+            actualizarUrlActual('-');
             document.getElementById('progressBar').style.display = 'none';
             document.getElementById('progressFill').style.width = '0%';
             mostrarOverlay('', '', false);
             agregarLog('🧹 Sistema limpiado', 'warning');
+        }
+
+        // ============================================
+        // FUNCIÓN: OBTENER SIGUIENTE URL
+        // ============================================
+
+        function obtenerSiguienteUrl() {
+            // Si hay lista de URLs, usarla
+            const listaText = document.getElementById('listaUrls').value.trim();
+            if (listaText) {
+                const urls = listaText.split('\n').map(u => u.trim()).filter(u => u);
+                if (urls.length > 0) {
+                    if (indiceUrlActual < urls.length) {
+                        const url = urls[indiceUrlActual];
+                        indiceUrlActual++;
+                        return url;
+                    } else {
+                        return null; // No hay más URLs
+                    }
+                }
+            }
+
+            // Si no hay lista, usar URL base
+            const urlBase = document.getElementById('urlEncuesta').value.trim();
+            if (urlBase) {
+                if (indiceUrlActual < totalPendientes) {
+                    indiceUrlActual++;
+                    return urlBase;
+                }
+                return null;
+            }
+
+            return null;
         }
 
         // ============================================
@@ -544,7 +632,7 @@
                         return;
                     }
 
-                    agregarLog('📝 Rellenando encuesta en: ' + doc.URL, 'info');
+                    agregarLog('📝 Rellenando encuesta', 'info');
                     let camposRellenados = 0;
 
                     // ========== 1. RELLENAR CAMPOS ==========
@@ -747,15 +835,12 @@
                 const contieneConfirmacion = textosConfirmacion.some(t => bodyText.includes(t));
                 
                 if (contieneConfirmacion) {
-                    agregarLog('✅ Confirmación de envío detectada', 'success');
                     return true;
                 }
                 
-                // Buscar elementos de confirmación
                 const elementosConfirmacion = doc.querySelectorAll('.success, .thank-you, .confirmation, .gracias, [role="alert"]');
                 for (const el of elementosConfirmacion) {
                     if (el.offsetParent !== null) {
-                        agregarLog('✅ Elemento de confirmación visible', 'success');
                         return true;
                     }
                 }
@@ -776,26 +861,70 @@
 
             const veces = parseInt(document.getElementById('numVeces').value) || 3;
             totalPendientes = veces;
+            indiceUrlActual = 0;
             actualizarContadores(0, veces);
             actualizarProgreso(0);
 
             agregarLog(`🚀 INICIANDO CICLO: ${veces} encuesta(s)`, 'info');
+            agregarLog(`📌 Usando navegación automática entre encuestas`, 'info');
             actualizarEstado(`🔄 Procesando 0/${veces}...`, '#667eea');
 
             let ejecutadas = 0;
             let fallosConsecutivos = 0;
-            const MAX_FALLOS = 5;
+            const MAX_FALLOS = 3;
 
             while (ejecutadas < veces && !detenerSolicitado && fallosConsecutivos < MAX_FALLOS) {
+                // ========== OBTENER SIGUIENTE URL ==========
+                const urlActual = obtenerSiguienteUrl();
+                
+                if (!urlActual) {
+                    agregarLog('❌ No hay más URLs disponibles', 'error');
+                    break;
+                }
+
                 ejecutadas++;
                 const porcentaje = (ejecutadas / veces) * 100;
                 actualizarProgreso(porcentaje);
-                actualizarEstado(`🔄 Rellenando ${ejecutadas}/${veces}...`, '#667eea');
-                mostrarOverlay(`📝 Encuesta ${ejecutadas}/${veces}`, 'Rellenando campos...');
+                actualizarEstado(`🔄 Procesando ${ejecutadas}/${veces}...`, '#667eea');
+                actualizarUrlActual(urlActual);
+                mostrarOverlay(`📝 Encuesta ${ejecutadas}/${veces}`, `Cargando: ${urlActual.substring(0, 50)}...`);
 
-                agregarLog(`📋 Iniciando encuesta ${ejecutadas}/${veces}`, 'info');
+                agregarLog(`📋 Cargando encuesta ${ejecutadas}/${veces}: ${urlActual}`, 'info');
 
-                // ========== PASO 1: RELLENAR Y ENVIAR ==========
+                // ========== CARGAR IFRAME ==========
+                const iframe = document.getElementById('frameEncuesta');
+                iframe.src = urlActual;
+
+                // Esperar carga
+                let cargaExitosa = false;
+                let intentosCarga = 0;
+                const MAX_INTENTOS_CARGA = 15;
+
+                await new Promise((resolve) => {
+                    const checkCarga = setInterval(() => {
+                        intentosCarga++;
+                        try {
+                            const doc = iframe.contentDocument || iframe.contentWindow.document;
+                            if (doc && doc.body && doc.body.children.length > 0) {
+                                clearInterval(checkCarga);
+                                cargaExitosa = true;
+                                agregarLog('✅ Iframe cargado correctamente', 'success');
+                                resolve();
+                            }
+                        } catch (e) {
+                            if (intentosCarga >= MAX_INTENTOS_CARGA) {
+                                clearInterval(checkCarga);
+                                agregarLog('⚠️ Carga parcial, continuando...', 'warning');
+                                resolve();
+                            }
+                        }
+                    }, 1000);
+                });
+
+                await sleep(1500);
+                mostrarOverlay(`📝 Rellenando ${ejecutadas}/${veces}`, 'Completando campos...');
+
+                // ========== RELLENAR Y ENVIAR ==========
                 const resultado = await rellenarYEnviarEncuesta();
 
                 if (resultado.exito) {
@@ -806,24 +935,14 @@
                     agregarLog(`⚠️ Encuesta ${ejecutadas} fallida (${fallosConsecutivos}/${MAX_FALLOS})`, 'warning');
                 }
 
-                // Si hay más encuestas pendientes, recargar para la siguiente
+                // ========== PASAR A LA SIGUIENTE ==========
                 if (ejecutadas < veces && !detenerSolicitado) {
-                    const url = document.getElementById('urlEncuesta').value.trim();
-                    if (url) {
-                        agregarLog('🔄 Recargando para siguiente encuesta...', 'info');
-                        mostrarOverlay('🔄 Cargando siguiente...', `Preparando encuesta ${ejecutadas + 1}/${veces}`);
-                        
-                        const iframe = document.getElementById('frameEncuesta');
-                        iframe.src = url;
-                        
-                        // Esperar carga
-                        await sleep(4000);
-                        mostrarOverlay('', '', false);
-                        await sleep(1000);
-                    }
+                    agregarLog(`🔄 Pasando a la siguiente encuesta... (${ejecutadas + 1}/${veces})`, 'info');
+                    mostrarOverlay(`🔄 Siguiente encuesta ${ejecutadas + 1}/${veces}`, 'Preparando...');
+                    await sleep(2000);
+                    mostrarOverlay('', '', false);
                 }
 
-                // Pequeña pausa entre ciclos
                 await sleep(500);
             }
 
@@ -850,6 +969,7 @@
             procesoActivo = false;
             actualizarContadores(contadorCompletadas, 0);
             document.getElementById('progressFill').style.width = '100%';
+            actualizarUrlActual('Finalizado');
         }
 
         // ============================================
@@ -857,12 +977,21 @@
         // ============================================
 
         function iniciarProceso() {
-            const url = document.getElementById('urlEncuesta').value.trim();
+            const urlBase = document.getElementById('urlEncuesta').value.trim();
+            const listaText = document.getElementById('listaUrls').value.trim();
             const veces = parseInt(document.getElementById('numVeces').value) || 3;
 
-            if (!url) {
-                alert('❌ Por favor, ingresa una URL de encuesta válida');
-                agregarLog('❌ Error: URL vacía', 'error');
+            // Verificar que haya al menos una URL
+            let tieneUrl = false;
+            if (urlBase) tieneUrl = true;
+            if (listaText) {
+                const urls = listaText.split('\n').map(u => u.trim()).filter(u => u);
+                if (urls.length > 0) tieneUrl = true;
+            }
+
+            if (!tieneUrl) {
+                alert('❌ Por favor, ingresa al menos una URL (base o en la lista)');
+                agregarLog('❌ Error: No hay URLs disponibles', 'error');
                 return;
             }
 
@@ -880,41 +1009,25 @@
             procesoActivo = true;
             detenerSolicitado = false;
             contadorCompletadas = 0;
+            indiceUrlActual = 0;
             document.getElementById('contadorEnvios').textContent = '0';
             document.getElementById('contadorPendientes').textContent = veces;
 
             agregarLog(`🚀 INICIANDO con ${veces} encuesta(s)`, 'info');
-            agregarLog(`📌 URL: ${url}`, 'info');
+            if (listaText) {
+                const urls = listaText.split('\n').map(u => u.trim()).filter(u => u);
+                agregarLog(`📋 Usando lista de ${urls.length} URLs`, 'info');
+            } else {
+                agregarLog(`📌 URL base: ${urlBase}`, 'info');
+            }
 
-            // Cargar iframe
-            const iframe = document.getElementById('frameEncuesta');
-            iframe.src = url;
-            mostrarOverlay('Cargando encuesta...', 'Preparando el sistema');
-            actualizarEstado('📥 Cargando encuesta...', '#f6ad55');
+            // Comenzar el ciclo directamente
+            mostrarOverlay('Iniciando proceso...', 'Preparando el sistema');
+            actualizarEstado('🚀 Iniciando ciclo...', '#48bb78');
 
-            // Esperar carga y comenzar ciclo
-            let intentosCarga = 0;
-            const MAX_INTENTOS_CARGA = 20;
-
-            const esperarCarga = setInterval(() => {
-                intentosCarga++;
-                try {
-                    const doc = iframe.contentDocument || iframe.contentWindow.document;
-                    if (doc && doc.body && doc.body.children.length > 0) {
-                        clearInterval(esperarCarga);
-                        mostrarOverlay('', '', false);
-                        agregarLog('✅ Iframe cargado correctamente', 'success');
-                        actualizarEstado('🚀 Iniciando ciclo...', '#48bb78');
-                        ejecutarCicloCompleto();
-                    }
-                } catch (e) {
-                    if (intentosCarga >= MAX_INTENTOS_CARGA) {
-                        clearInterval(esperarCarga);
-                        mostrarOverlay('', '', false);
-                        agregarLog('⚠️ Carga parcial, iniciando de todos modos...', 'warning');
-                        ejecutarCicloCompleto();
-                    }
-                }
+            setTimeout(() => {
+                mostrarOverlay('', '', false);
+                ejecutarCicloCompleto();
             }, 1500);
         }
 
@@ -937,11 +1050,21 @@
         // INICIALIZACIÓN
         // ============================================
 
-        console.log('🤖 Automatizador de Encuestas - Ciclo Completo');
-        console.log('📌 Versión: 2.0 - Rellena, envía, confirma y sigue');
-        console.log('ℹ️ Ingresa URL, elige veces y presiona "Iniciar Ciclo"');
+        console.log('🤖 Automatizador de Encuestas - Navegación Automática');
+        console.log('📌 Versión: 3.0 - Pasa automáticamente a la siguiente encuesta');
+        console.log('ℹ️ Ingresa URL(s) y presiona "Iniciar Ciclo"');
 
-        agregarLog('💡 Sistema listo. Ingresa una URL y presiona "Iniciar Ciclo"', 'info');
+        agregarLog('💡 Sistema listo. Ingresa URL(s) y presiona "Iniciar Ciclo"', 'info');
+
+        // Cargar URL inicial si existe
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputUrl = document.getElementById('urlEncuesta');
+            if (inputUrl.value) {
+                const iframe = document.getElementById('frameEncuesta');
+                iframe.src = inputUrl.value;
+                actualizarUrlActual(inputUrl.value);
+            }
+        });
     </script>
 
 </body>

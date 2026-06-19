@@ -6,91 +6,57 @@
     <title>Generador Automático</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #8B4513;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-            width: 100%;
-        }
-        #status {
-            margin-top: 20px;
-            padding: 15px;
-            font-size: 16px;
-        }
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        button { background-color: #8B4513; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; width: 100%; }
+        button:hover { background-color: #6B3410; }
+        button:disabled { background-color: #ccc; }
+        #status { margin-top: 20px; padding: 15px; font-size: 16px; }
     </style>
 </head>
 <body>
-    <h1>🚀 Generador Automático</h1>
-    <input type="text" id="link" placeholder="Pega el LINK de tu encuesta aquí">
-    <button onclick="hacerTodo()">🚀INICIAR (rellena y envía automáticamente)</button>
+    <h1>🚀 Generador - 50 Encuestas</h1>
+    <button onclick="hacerTodo()">🚀INICIAR (50 encuestas)</button>
     <div id="status"></div>
 
     <script type="text/javascript">
         emailjs.init("miHQ7cMDRJ1p9YaB2");
 
         async function hacerTodo() {
-            const link = document.getElementById('link').value;
+            const link = "https://lilianahenriquez682-crypto.github.io/encuesta-velas";
             const status = document.getElementById('status');
+            const btn = document.querySelector('button');
             
-            if (!link) {
-                alert("Pega el link primero!");
-                return;
-            }
+            btn.disabled = true;
+            status.innerHTML = "⏳ Abriendo: " + link;
 
-            status.innerHTML = "⏳ Cargando link: " + link;
-
-            // Abrir link
-            const popup = window.open(link, 'Encuesta', 'width=800,height=600');
-            
-            // Esperar que cargue
-            await new Promise(r => setTimeout(r, 3000));
-
-            // Rellenar y enviar 50 veces
             for (let i = 1; i <= 50; i++) {
-                status.innerHTML = `🔄 Rellenando encuesta ${i}/50...`;
+                status.innerHTML = `🔄 ${i}/50 - Rellenando...`;
                 
-                // Rellenar datos
+                const popup = window.open(link, 'Encuesta' + i, 'width=800,height=600');
+                await new Promise(r => setTimeout(r, 3000));
+                
                 const datos = {
                     nombre: "Cliente " + i,
                     edad: Math.floor(Math.random() * 50) + 18,
                     genero: ["Femenino", "Masculino", "Otro"][Math.floor(Math.random() * 3)],
-                    precio: ["$10-$15", "$15-$20", "$20-$25"][Math.floor(Math.random() * 3)],
-                    frecuencia: ["1 vez/mes", "2-3 veces/mes", "1 vez/semana"][Math.floor(Math.random() * 3)],
-                    aroma: ["Lavanda", "Vainilla", "Coco"][Math.floor(Math.random() * 3)],
-                    tamaño: ["Pequeño", "Mediano", "Grande"][Math.floor(Math.random() * 3)],
-                    uso: ["Decoración", "Relajación", "Regalo"][Math.floor(Math.random() * 3)],
-                    diseño: ["Sí", "No"][Math.floor(Math.random() * 2)],
-                    online: ["Sí", "Quizás", "No"][Math.floor(Math.random() * 3)]
+                    precio: ["$10-$15", "$15-$20", "$20-$25", "$25-$30"][Math.floor(Math.random() * 4)],
+                    frecuencia: ["1 vez/mes", "2-3 veces/mes", "1 vez/semana", "Rara vez"][Math.floor(Math.random() * 4)],
+                    aroma: ["Lavanda", "Vainilla", "Coco", "Cítrico", "Rosas"][Math.floor(Math.random() * 5)],
+                    tamaño: ["Pequeño (50g)", "Mediano (100g)", "Grande (200g)"][Math.floor(Math.random() * 3)],
+                    uso: ["Decoración", "Ambientador", "Relajación", "Regalo"][Math.floor(Math.random() * 4)],
+                    diseño: ["Sí, mucho", "Sí, pero no tanto", "No importa"][Math.floor(Math.random() * 3)],
+                    online: ["Sí, seguro", "Quizás", "No"][Math.floor(Math.random() * 3)]
                 };
 
-                // Enviar
                 await emailjs.send('service_xfo7y7f', 'template_qcb2q9m', datos);
+                popup.close();
                 
-                status.innerHTML = `✅ Encuesta ${i}/50 enviada!`;
-                
-                await new Promise(r => setTimeout(r, 1000));
+                status.innerHTML = `✅ ${i}/50 enviada`;
+                await new Promise(r => setTimeout(r, 1500));
             }
 
-            popup.close();
-            status.innerHTML = "✅ ¡COMPLETADO! 50 encuestas enviadas!";
+            btn.disabled = false;
+            status.innerHTML = "✅ ¡50 ENCUESTAS ENVIADAS!";
             alert("✅ 50 encuestas enviadas!");
         }
     </script>

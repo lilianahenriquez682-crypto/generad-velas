@@ -3,51 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuesta Velas - Proyecto</title>
+    <title>Encuesta Velas - Proyecto Académico</title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-        body { background:#fff9f3; padding:2rem; max-width:600px; margin:0 auto; text-align:center; }
+        body { background:#fff9f3; padding:2rem; max-width:620px; margin:0 auto; text-align:center; }
         .logo { font-size:3.5rem; margin-bottom:1rem; }
-        h1 { color:#8b4513; margin-bottom:1.5rem; }
-        .info { background:#fff3e8; padding:1.2rem; border-radius:8px; margin-bottom:2rem; border-left:5px solid #d28b48; text-align:left; }
-        .boton { padding:1rem 2rem; background:#d28b48; color:white; border:none; border-radius:8px; font-size:1.1rem; font-weight:bold; cursor:pointer; }
-        .boton:hover { background:#b97335; }
-        .aviso { margin-top:1.5rem; color:#2e7d32; font-weight:bold; display:none; }
+        h1 { color:#8b4513; margin-bottom:1.2rem; font-size:26px; }
+        .info { background:#fff3e8; padding:1.3rem; border-radius:8px; margin-bottom:2rem; border-left:5px solid #d28b48; text-align:left; }
+        .info p { margin:0.6rem 0; color:#444; line-height:1.5; }
+        .boton { padding:1.1rem 2.2rem; background:#d28b48; color:white; border:none; border-radius:8px; font-size:1.2rem; font-weight:bold; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.15); }
+        .boton:hover { background:#b97335; transform:translateY(-2px); }
+        .estado { margin-top:1.5rem; color:#2e7d32; font-weight:bold; display:none; font-size:1.1rem; }
     </style>
 </head>
 <body>
 
     <div class="logo">🐱</div>
-    <h1>Encuesta sobre Velas</h1>
+    <h1>📊 Encuesta sobre Velas Aromáticas</h1>
 
     <div class="info">
-        <p>✅ <strong>Ya viene lista:</strong></p>
-        <p>• Edad: 18 a 55 años (lógica)</p>
-        <p>• Sí / No / Puntuaciones coherentes</p>
-        <p>• Funciona aunque tenga muchas páginas</p>
-        <p>👉 <strong>TÚ SOLO:</strong> Pasas las páginas y das clic en ENVIAR</p>
+        <p>✅ <strong>¿Qué hace?:</strong> Abre tu encuesta y trae ya marcados:</p>
+        <p>• ✅ Respuesta: <strong>Sí</strong> (ha comprado en 6 meses)</p>
+        <p>• 🎂 Edad: número lógico entre <strong>18 y 52 años</strong></p>
+        <p>• ⭐ Escalas: valores coherentes (3,4,5 mayormente)</p>
+        <p>👉 <strong>TÚ SOLO:</strong> Das clic en <em>Siguiente</em> en cada página y al final en <em>Enviar</em></p>
     </div>
 
-    <!-- 👇 AQUÍ PEGAS TU ENLACE REAL DE LA ENCUESTA 👇 -->
-    <input type="hidden" id="enlaceOriginal" value="PEGAR_AQUÍ_TU_ENLACE_AQUÍ">
+    <!-- TU ENLACE YA INCLUIDO AQUÍ -->
+    <input type="hidden" id="enlaceBase" value="https://lilianahenriquez682-crypto.github.io/encuesta-velas">
 
-    <button class="boton" onclick="abrirLista()">🚀 Abrir encuesta ya rellenada</button>
-    <div id="estado" class="aviso">✔️ Abierta, solo revisa y envía</div>
+    <button class="boton" onclick="abrirLista()">⚡ Abrir y dejar todo marcado</button>
+    <div id="aviso" class="estado">✔️ Lista, solo avanza y envía</div>
 
     <script>
         function abrirLista() {
-            let base=document.getElementById("enlaceOriginal").value.trim();
-            if(!base || base.includes("PEGAR_AQUÍ")){
-                alert("⚠️ Pon primero tu enlace real en el código");
-                return;
-            }
+            let base = document.getElementById("enlaceBase").value.trim();
             // Genera valores coherentes
-            let edad=Math.floor(Math.random()*38)+18;
-            // Si quieres cambiar más campos, usas el método "enlace pre-rellenado"
-            let enlaceFinal=`${base}?entry.edad=${edad}`;
-            window.open(enlaceFinal,"_blank");
-            document.getElementById("estado").style.display="block";
+            let edad = Math.floor(Math.random() * 35) + 18;
+            // Formato compatible con tu encuesta
+            let enlacePre = `${base}?comprado=Sí&edad=${edad}`;
+            // Abre en nueva pestaña
+            window.open(enlacePre, "_blank");
+            document.getElementById("aviso").style.display = "block";
         }
     </script>
+
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Automatizador de Encuestas</title>
+    <title>🤖 Automatizador - Ciclo Completo</title>
     <style>
         * {
             margin: 0;
@@ -37,7 +37,7 @@
             font-size: 1.1em;
         }
 
-        .header .badge-github {
+        .badge {
             display: inline-block;
             background: rgba(255,255,255,0.2);
             padding: 5px 15px;
@@ -142,16 +142,6 @@
             transform: translateY(-2px);
         }
 
-        .btn-github {
-            background: #24292e;
-            color: white;
-        }
-
-        .btn-github:hover {
-            background: #1a1e22;
-            transform: translateY(-2px);
-        }
-
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -186,9 +176,9 @@
 
         .progress-bar {
             width: 100%;
-            height: 6px;
+            height: 8px;
             background: #2a2f4a;
-            border-radius: 3px;
+            border-radius: 4px;
             margin: 10px 0 20px 0;
             overflow: hidden;
             display: none;
@@ -199,14 +189,48 @@
             background: linear-gradient(90deg, #667eea, #764ba2);
             width: 0%;
             transition: width 0.5s;
-            border-radius: 3px;
+            border-radius: 4px;
+        }
+
+        .log-container {
+            background: #0d1128;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #2a2f4a;
+        }
+
+        .log-container .log-entry {
+            color: #a0aec0;
+            font-size: 0.9em;
+            padding: 3px 0;
+            border-bottom: 1px solid #1a1f3a;
+            font-family: 'Courier New', monospace;
+        }
+
+        .log-container .log-entry.success {
+            color: #48bb78;
+        }
+
+        .log-container .log-entry.error {
+            color: #fc8181;
+        }
+
+        .log-container .log-entry.info {
+            color: #63b3ed;
+        }
+
+        .log-container .log-entry.warning {
+            color: #f6ad55;
         }
 
         .frame-container {
             background: #1a1f3a;
             border-radius: 15px;
             padding: 10px;
-            height: 70vh;
+            height: 60vh;
             position: relative;
             overflow: hidden;
         }
@@ -224,7 +248,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             padding: 30px 40px;
             border-radius: 15px;
             color: white;
@@ -233,6 +257,7 @@
             text-align: center;
             backdrop-filter: blur(10px);
             border: 2px solid #667eea;
+            min-width: 300px;
         }
 
         .frame-overlay .spinner {
@@ -243,6 +268,12 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
+        }
+
+        .frame-overlay .sub-text {
+            font-size: 0.7em;
+            opacity: 0.7;
+            margin-top: 10px;
         }
 
         @keyframes spin {
@@ -258,15 +289,6 @@
             font-size: 0.9em;
         }
 
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -275,7 +297,7 @@
                 width: 100%;
             }
             .frame-container {
-                height: 50vh;
+                height: 40vh;
             }
             .header h1 {
                 font-size: 1.5em;
@@ -291,15 +313,15 @@
 
     <div class="header">
         <h1>🤖 Automatizador de Encuestas</h1>
-        <p>Ingresa el link de tu encuesta y el sistema la rellenará automáticamente</p>
-        <span class="badge-github">🚀 GitHub Pages</span>
+        <p>🔁 Ciclo completo: Rellena → Envía → Confirma → Siguiente</p>
+        <span class="badge">✅ Inicio, proceso y fin automático</span>
     </div>
 
     <div class="controls">
         <input type="text" id="urlEncuesta" placeholder="https://ejemplo.com/encuesta" value="">
         <label>Veces:</label>
         <input type="number" id="numVeces" value="3" min="1" max="50">
-        <button class="btn btn-primary" onclick="iniciarProceso()">🚀 Iniciar</button>
+        <button class="btn btn-primary" onclick="iniciarProceso()">🚀 Iniciar Ciclo</button>
         <button class="btn btn-danger" onclick="detenerProceso()">⏹ Detener</button>
         <button class="btn btn-warning" onclick="recargarIframe()">🔄 Recargar</button>
         <button class="btn btn-success" onclick="limpiarTodo()">🗑️ Limpiar</button>
@@ -307,11 +329,16 @@
 
     <div class="status-bar">
         <span>📊 Estado: <span class="status-text" id="estadoTexto">Esperando inicio...</span></span>
-        <span class="counter">📝 Enviadas: <span id="contadorEnvios">0</span></span>
+        <span class="counter">📝 Completadas: <span id="contadorEnvios">0</span></span>
+        <span class="counter">⏳ Pendientes: <span id="contadorPendientes">0</span></span>
     </div>
 
     <div class="progress-bar" id="progressBar">
         <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="log-container" id="logContainer">
+        <div class="log-entry info">📌 Sistema listo. Esperando instrucciones...</div>
     </div>
 
     <div class="frame-container">
@@ -319,11 +346,12 @@
         <div class="frame-overlay" id="frameOverlay">
             <div class="spinner"></div>
             <p id="overlayTexto">Procesando...</p>
+            <div class="sub-text" id="overlaySubtext">Esto puede tomar unos segundos</div>
         </div>
     </div>
 
     <div class="footer">
-        <p>🔒 Automatización de encuestas · <a href="#" onclick="verInstrucciones()">Instrucciones</a></p>
+        <p>🔒 Ciclo completo: Rellena → Envía → Espera confirmación → Siguiente</p>
     </div>
 
     <script>
@@ -336,9 +364,8 @@
                      'Carmen', 'Javier', 'Patricia', 'Roberto', 'Isabel', 'Andrés', 'Raquel', 'David', 'Marta', 'Pablo',
                      'Lucía', 'Diego', 'Paula', 'Alejandro', 'Natalia', 'Sergio', 'Andrea', 'Manuel', 'Valentina', 'Carlos'],
             apellidos: ['García', 'Martínez', 'López', 'Rodríguez', 'Fernández', 'González', 'Pérez', 'Sánchez',
-                       'Ramírez', 'Torres', 'Rivera', 'Morales', 'Ortiz', 'Cruz', 'Reyes', 'Gutiérrez', 'Mendoza',
-                       'Herrera', 'Flores', 'Romero', 'Álvarez', 'Castro', 'Gómez', 'Díaz', 'Vargas', 'Ramos'],
-            dominios: ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'protonmail.com', 'icloud.com', 'gmx.com'],
+                       'Ramírez', 'Torres', 'Rivera', 'Morales', 'Ortiz', 'Cruz', 'Reyes', 'Gutiérrez', 'Mendoza'],
+            dominios: ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'protonmail.com', 'icloud.com'],
             generos: ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir'],
             satisfaccion: ['Muy satisfecho', 'Satisfecho', 'Neutral', 'Insatisfecho', 'Muy insatisfecho'],
             frecuencia: ['Diario', 'Semanal', 'Mensual', 'Raramente', 'Nunca'],
@@ -360,10 +387,8 @@
                 'Recomiendo a todos este servicio',
                 'Excelente relación calidad-precio',
                 'Muy profesional y confiable',
-                'Superó mis expectativas',
-                'Buen producto, buena atención'
-            ],
-            mejoras: ['Precio', 'Calidad', 'Atención', 'Velocidad', 'Diseño', 'Funcionalidad', 'Ninguno']
+                'Superó mis expectativas'
+            ]
         };
 
         // ============================================
@@ -371,11 +396,10 @@
         // ============================================
 
         let procesoActivo = false;
-        let contadorEnvios = 0;
-        let intervaloProceso = null;
-        let intentosFallidos = 0;
-        const MAX_INTENTOS = 10;
-        let ejecucionesPendientes = 0;
+        let contadorCompletadas = 0;
+        let totalPendientes = 0;
+        let cicloEnEjecucion = false;
+        let detenerSolicitado = false;
 
         // ============================================
         // FUNCIONES DE GENERACIÓN DE DATOS
@@ -424,24 +448,22 @@
             return randomItem(DATOS.comentarios);
         }
 
-        function generarMejoras() {
-            const num = Math.floor(Math.random() * 3) + 1;
-            const seleccionados = [];
-            const temp = [...DATOS.mejoras];
-            for (let i = 0; i < num && temp.length > 0; i++) {
-                const idx = Math.floor(Math.random() * temp.length);
-                seleccionados.push(temp[idx]);
-                temp.splice(idx, 1);
+        // ============================================
+        // FUNCIONES DE LOG Y UI
+        // ============================================
+
+        function agregarLog(mensaje, tipo = 'info') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${tipo}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${mensaje}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+            // Mantener solo los últimos 50 logs
+            while (container.children.length > 50) {
+                container.removeChild(container.firstChild);
             }
-            return seleccionados;
-        }
-
-        // ============================================
-        // FUNCIONES DE UTILIDAD
-        // ============================================
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
         }
 
         function actualizarEstado(texto, color = '#48bb78') {
@@ -457,15 +479,26 @@
             fill.style.width = Math.min(porcentaje, 100) + '%';
         }
 
-        function mostrarOverlay(texto, mostrar = true) {
+        function actualizarContadores(completadas, pendientes) {
+            document.getElementById('contadorEnvios').textContent = completadas;
+            document.getElementById('contadorPendientes').textContent = pendientes;
+        }
+
+        function mostrarOverlay(texto, subtexto = '', mostrar = true) {
             const overlay = document.getElementById('frameOverlay');
             const textoEl = document.getElementById('overlayTexto');
+            const subtextoEl = document.getElementById('overlaySubtext');
             if (mostrar) {
                 textoEl.textContent = texto;
+                subtextoEl.textContent = subtexto || 'Por favor espera...';
                 overlay.style.display = 'block';
             } else {
                 overlay.style.display = 'none';
             }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
 
         function recargarIframe() {
@@ -473,240 +506,233 @@
             const url = document.getElementById('urlEncuesta').value.trim();
             if (url) {
                 iframe.src = url;
-                actualizarEstado('🔄 Recargando...', '#f6ad55');
-                mostrarOverlay('Cargando encuesta...');
+                agregarLog('🔄 Recargando iframe: ' + url, 'info');
+                mostrarOverlay('Cargando encuesta...', '');
                 setTimeout(() => {
-                    mostrarOverlay('', false);
-                    actualizarEstado('✅ Recargado, esperando acción', '#48bb78');
+                    mostrarOverlay('', '', false);
                 }, 4000);
             } else {
-                alert('❌ Por favor, ingresa una URL primero');
+                agregarLog('❌ No hay URL para recargar', 'error');
             }
         }
 
         function limpiarTodo() {
             detenerProceso();
-            document.getElementById('contadorEnvios').textContent = '0';
-            contadorEnvios = 0;
-            intentosFallidos = 0;
+            contadorCompletadas = 0;
+            totalPendientes = 0;
+            actualizarContadores(0, 0);
             actualizarEstado('🧹 Todo limpiado', '#a0aec0');
             document.getElementById('progressBar').style.display = 'none';
             document.getElementById('progressFill').style.width = '0%';
-            mostrarOverlay('', false);
-        }
-
-        function verInstrucciones() {
-            alert(
-                '📌 INSTRUCCIONES DE USO\n\n' +
-                '1. Pega el LINK de tu encuesta en el campo URL\n' +
-                '2. Elige cuántas VECES quieres rellenarla\n' +
-                '3. Presiona "INICIAR"\n\n' +
-                '⚠️ IMPORTANTE:\n' +
-                '• Algunas páginas bloquean los iframes (problema de CORS)\n' +
-                '• Google Forms a veces funciona, a veces no\n' +
-                '• Si no carga, abre la encuesta en otra pestaña\n' +
-                '• En la consola F12 puedes ejecutar el script manualmente\n\n' +
-                '🔒 Solo para fines educativos y de prueba'
-            );
+            mostrarOverlay('', '', false);
+            agregarLog('🧹 Sistema limpiado', 'warning');
         }
 
         // ============================================
-        // FUNCIÓN PRINCIPAL: RELLENAR IFRAME
+        // FUNCIÓN: RELLENAR Y ENVIAR ENCUESTA
         // ============================================
 
-        function rellenarEncuestaEnIframe() {
-            try {
-                const iframe = document.getElementById('frameEncuesta');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                
-                if (!doc || !doc.body || doc.body.children.length === 0) {
-                    console.warn('⚠️ Iframe no cargado completamente');
-                    return false;
-                }
+        function rellenarYEnviarEncuesta() {
+            return new Promise((resolve) => {
+                try {
+                    const iframe = document.getElementById('frameEncuesta');
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    if (!doc || !doc.body || doc.body.children.length === 0) {
+                        agregarLog('⚠️ Iframe no cargado correctamente', 'warning');
+                        resolve({ exito: false, motivo: 'iframe_no_cargado' });
+                        return;
+                    }
 
-                console.log('🔄 Rellenando encuesta en:', doc.URL);
-                let camposRellenados = 0;
+                    agregarLog('📝 Rellenando encuesta en: ' + doc.URL, 'info');
+                    let camposRellenados = 0;
 
-                // ========== 1. BUSCAR TODOS LOS CAMPOS ==========
-                const inputs = doc.querySelectorAll('input, textarea, select');
-                
-                inputs.forEach((elemento) => {
-                    try {
-                        if (elemento.type === 'hidden' || elemento.disabled) return;
-                        if (elemento.offsetParent === null) return; // No visible
-                        
-                        const tipo = elemento.type ? elemento.type.toLowerCase() : '';
-                        const tag = elemento.tagName.toLowerCase();
-                        const name = (elemento.name || '').toLowerCase();
-                        const id = (elemento.id || '').toLowerCase();
-                        const placeholder = (elemento.placeholder || '').toLowerCase();
-                        
-                        // ========== 2. PROCESAR POR TIPO ==========
-                        
-                        // --- TEXT / EMAIL / TEL / URL ---
-                        if (tipo === 'text' || tipo === 'email' || tipo === 'tel' || tipo === 'url' || tipo === 'search') {
-                            let respuesta = '';
+                    // ========== 1. RELLENAR CAMPOS ==========
+                    const inputs = doc.querySelectorAll('input, textarea, select');
+                    
+                    inputs.forEach((elemento) => {
+                        try {
+                            if (elemento.type === 'hidden' || elemento.disabled) return;
+                            if (elemento.offsetParent === null) return;
+                            
+                            const tipo = elemento.type ? elemento.type.toLowerCase() : '';
+                            const tag = elemento.tagName.toLowerCase();
+                            const name = (elemento.name || '').toLowerCase();
+                            const id = (elemento.id || '').toLowerCase();
+                            const placeholder = (elemento.placeholder || '').toLowerCase();
                             const textoCompleto = name + ' ' + id + ' ' + placeholder;
                             
-                            if (textoCompleto.includes('nombre') || textoCompleto.includes('name')) {
-                                respuesta = generarNombre();
-                            } else if (textoCompleto.includes('email') || textoCompleto.includes('correo')) {
-                                respuesta = generarEmail();
-                            } else if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
-                                respuesta = String(generarEdad());
-                            } else if (textoCompleto.includes('tel') || textoCompleto.includes('phone') || textoCompleto.includes('telefono')) {
-                                respuesta = '3' + String(Math.floor(Math.random() * 900000000) + 100000000);
-                            } else if (textoCompleto.includes('ciudad') || textoCompleto.includes('city')) {
-                                respuesta = randomItem(['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Buenos Aires', 'Ciudad de México', 'Madrid', 'Santiago', 'Lima']);
-                            } else {
-                                respuesta = generarComentario().substring(0, 50);
+                            // --- TEXT / EMAIL / TEL ---
+                            if (tipo === 'text' || tipo === 'email' || tipo === 'tel' || tipo === 'url') {
+                                let respuesta = '';
+                                if (textoCompleto.includes('nombre') || textoCompleto.includes('name')) {
+                                    respuesta = generarNombre();
+                                } else if (textoCompleto.includes('email') || textoCompleto.includes('correo')) {
+                                    respuesta = generarEmail();
+                                } else if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
+                                    respuesta = String(generarEdad());
+                                } else if (textoCompleto.includes('tel') || textoCompleto.includes('phone') || textoCompleto.includes('telefono')) {
+                                    respuesta = '3' + String(Math.floor(Math.random() * 900000000) + 100000000);
+                                } else if (textoCompleto.includes('ciudad') || textoCompleto.includes('city')) {
+                                    respuesta = randomItem(['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Buenos Aires', 'Ciudad de México', 'Madrid', 'Santiago', 'Lima']);
+                                } else {
+                                    respuesta = generarComentario().substring(0, 50);
+                                }
+                                if (respuesta) {
+                                    elemento.value = respuesta;
+                                    elemento.dispatchEvent(new Event('input', { bubbles: true }));
+                                    elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                                    camposRellenados++;
+                                }
                             }
                             
-                            if (respuesta) {
+                            // --- NUMBER ---
+                            else if (tipo === 'number') {
+                                let respuesta = '';
+                                if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
+                                    respuesta = String(generarEdad());
+                                } else if (textoCompleto.includes('calif') || textoCompleto.includes('rating') || textoCompleto.includes('puntuacion')) {
+                                    respuesta = generarCalificacion();
+                                } else {
+                                    respuesta = String(Math.floor(Math.random() * 10) + 1);
+                                }
                                 elemento.value = respuesta;
                                 elemento.dispatchEvent(new Event('input', { bubbles: true }));
                                 elemento.dispatchEvent(new Event('change', { bubbles: true }));
                                 camposRellenados++;
                             }
-                        }
-                        
-                        // --- NUMBER ---
-                        else if (tipo === 'number') {
-                            let respuesta = '';
-                            const textoCompleto = name + ' ' + id + ' ' + placeholder;
-                            if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
-                                respuesta = String(generarEdad());
-                            } else if (textoCompleto.includes('calif') || textoCompleto.includes('rating') || textoCompleto.includes('puntuacion')) {
-                                respuesta = generarCalificacion();
-                            } else {
-                                respuesta = String(Math.floor(Math.random() * 10) + 1);
+                            
+                            // --- RADIO ---
+                            else if (tipo === 'radio') {
+                                const nameRadio = elemento.name;
+                                if (nameRadio && !elemento.checked) {
+                                    const grupo = doc.querySelectorAll(`input[name="${nameRadio}"]`);
+                                    const opcionesDisponibles = Array.from(grupo).filter(el => !el.disabled && el.offsetParent !== null);
+                                    if (opcionesDisponibles.length > 0) {
+                                        const elegido = randomItem(opcionesDisponibles);
+                                        elegido.checked = true;
+                                        elegido.dispatchEvent(new Event('change', { bubbles: true }));
+                                        elegido.dispatchEvent(new Event('click', { bubbles: true }));
+                                        camposRellenados++;
+                                    }
+                                }
                             }
-                            elemento.value = respuesta;
-                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                            camposRellenados++;
-                        }
-                        
-                        // --- RADIO ---
-                        else if (tipo === 'radio') {
-                            const nameRadio = elemento.name;
-                            if (nameRadio && !elemento.checked) {
-                                const grupo = doc.querySelectorAll(`input[name="${nameRadio}"]`);
-                                const opcionesDisponibles = Array.from(grupo).filter(el => !el.disabled && el.offsetParent !== null);
-                                if (opcionesDisponibles.length > 0) {
-                                    const elegido = randomItem(opcionesDisponibles);
-                                    elegido.checked = true;
-                                    elegido.dispatchEvent(new Event('change', { bubbles: true }));
-                                    elegido.dispatchEvent(new Event('click', { bubbles: true }));
+                            
+                            // --- CHECKBOX ---
+                            else if (tipo === 'checkbox') {
+                                if (Math.random() > 0.4) {
+                                    elemento.checked = true;
+                                    elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                                    elemento.dispatchEvent(new Event('click', { bubbles: true }));
                                     camposRellenados++;
                                 }
                             }
-                        }
-                        
-                        // --- CHECKBOX ---
-                        else if (tipo === 'checkbox') {
-                            if (Math.random() > 0.4) {
-                                elemento.checked = true;
+                            
+                            // --- SELECT ---
+                            else if (tag === 'select') {
+                                const opciones = Array.from(elemento.options).filter(opt => opt.value && !opt.disabled);
+                                if (opciones.length > 0) {
+                                    const elegida = randomItem(opciones);
+                                    elemento.value = elegida.value;
+                                    elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                                    camposRellenados++;
+                                }
+                            }
+                            
+                            // --- TEXTAREA ---
+                            else if (tag === 'textarea') {
+                                let respuesta = generarComentario();
+                                const rows = parseInt(elemento.rows) || 3;
+                                if (rows <= 2) respuesta = respuesta.substring(0, 30);
+                                elemento.value = respuesta;
+                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
                                 elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                                elemento.dispatchEvent(new Event('click', { bubbles: true }));
                                 camposRellenados++;
                             }
-                        }
-                        
-                        // --- SELECT ---
-                        else if (tag === 'select') {
-                            const opciones = Array.from(elemento.options).filter(opt => opt.value && !opt.disabled);
-                            if (opciones.length > 0) {
-                                const elegida = randomItem(opciones);
-                                elemento.value = elegida.value;
+                            
+                            // --- RANGE ---
+                            else if (tipo === 'range') {
+                                const min = parseFloat(elemento.min) || 1;
+                                const max = parseFloat(elemento.max) || 10;
+                                const valor = Math.floor(Math.random() * (max - min + 1)) + min;
+                                elemento.value = valor;
+                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
                                 elemento.dispatchEvent(new Event('change', { bubbles: true }));
                                 camposRellenados++;
                             }
+                            
+                            // --- DATE ---
+                            else if (tipo === 'date') {
+                                const year = Math.floor(Math.random() * (2025 - 1990)) + 1990;
+                                const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+                                const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+                                elemento.value = `${year}-${month}-${day}`;
+                                elemento.dispatchEvent(new Event('input', { bubbles: true }));
+                                elemento.dispatchEvent(new Event('change', { bubbles: true }));
+                                camposRellenados++;
+                            }
+                            
+                        } catch (e) {
+                            // Error individual, continuar
                         }
-                        
-                        // --- TEXTAREA ---
-                        else if (tag === 'textarea') {
-                            let respuesta = generarComentario();
-                            const rows = parseInt(elemento.rows) || 3;
-                            if (rows <= 2) respuesta = respuesta.substring(0, 30);
-                            elemento.value = respuesta;
-                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                            camposRellenados++;
-                        }
-                        
-                        // --- RANGE (slider) ---
-                        else if (tipo === 'range') {
-                            const min = parseFloat(elemento.min) || 1;
-                            const max = parseFloat(elemento.max) || 10;
-                            const valor = Math.floor(Math.random() * (max - min + 1)) + min;
-                            elemento.value = valor;
-                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                            camposRellenados++;
-                        }
-                        
-                        // --- DATE ---
-                        else if (tipo === 'date') {
-                            const year = Math.floor(Math.random() * (2025 - 1990)) + 1990;
-                            const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-                            const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
-                            elemento.value = `${year}-${month}-${day}`;
-                            elemento.dispatchEvent(new Event('input', { bubbles: true }));
-                            elemento.dispatchEvent(new Event('change', { bubbles: true }));
-                            camposRellenados++;
-                        }
-                        
-                    } catch (e) {
-                        console.warn('Error en elemento:', e);
-                    }
-                });
+                    });
 
-                console.log(`✅ Campos rellenados: ${camposRellenados}`);
-                
-                // ========== 3. BUSCAR BOTÓN DE ENVÍO ==========
-                const botones = doc.querySelectorAll('input[type="submit"], button[type="submit"], button:not([type]), .btn-submit, .submit, [role="button"]');
-                let botonEncontrado = null;
-                
-                for (const btn of botones) {
-                    if (btn.offsetParent !== null && !btn.disabled) {
-                        const texto = (btn.textContent || btn.value || '').toLowerCase();
-                        if (texto.includes('enviar') || texto.includes('submit') || texto.includes('envi') || 
-                            texto.includes('send') || texto.includes('aceptar') || texto.includes('ok') || 
-                            texto.includes('continuar') || texto.includes('siguiente')) {
-                            botonEncontrado = btn;
-                            break;
-                        }
-                    }
-                }
+                    agregarLog(`✅ Campos rellenados: ${camposRellenados}`, 'success');
 
-                if (!botonEncontrado) {
+                    // ========== 2. BUSCAR BOTÓN DE ENVÍO ==========
+                    const botones = doc.querySelectorAll('input[type="submit"], button[type="submit"], button:not([type]), .btn-submit, .submit, [role="button"]');
+                    let botonEncontrado = null;
+                    
                     for (const btn of botones) {
                         if (btn.offsetParent !== null && !btn.disabled) {
-                            botonEncontrado = btn;
-                            break;
+                            const texto = (btn.textContent || btn.value || '').toLowerCase();
+                            if (texto.includes('enviar') || texto.includes('submit') || texto.includes('envi') || 
+                                texto.includes('send') || texto.includes('aceptar') || texto.includes('ok') || 
+                                texto.includes('continuar') || texto.includes('siguiente') || texto.includes('finalizar')) {
+                                botonEncontrado = btn;
+                                break;
+                            }
                         }
                     }
-                }
 
-                if (botonEncontrado) {
-                    console.log('✅ Botón de envío encontrado, enviando...');
-                    botonEncontrado.click();
-                    
-                    setTimeout(() => {
-                        verificarConfirmacion(doc);
-                    }, 2000);
-                    
-                    return true;
-                } else {
-                    console.warn('⚠️ No se encontró botón de envío');
-                    return false;
-                }
+                    if (!botonEncontrado) {
+                        for (const btn of botones) {
+                            if (btn.offsetParent !== null && !btn.disabled) {
+                                botonEncontrado = btn;
+                                break;
+                            }
+                        }
+                    }
 
-            } catch (error) {
-                console.error('❌ Error al rellenar:', error);
-                return false;
-            }
+                    if (botonEncontrado) {
+                        agregarLog('📤 Haciendo clic en botón de envío...', 'info');
+                        botonEncontrado.click();
+                        
+                        // Esperar confirmación
+                        setTimeout(() => {
+                            const confirmado = verificarConfirmacion(doc);
+                            if (confirmado) {
+                                contadorCompletadas++;
+                                totalPendientes--;
+                                actualizarContadores(contadorCompletadas, totalPendientes);
+                                agregarLog(`✅ Encuesta #${contadorCompletadas} COMPLETADA con éxito`, 'success');
+                                resolve({ exito: true, mensaje: 'Encuesta enviada y confirmada' });
+                            } else {
+                                agregarLog('⚠️ No se detectó confirmación, pero se intentó enviar', 'warning');
+                                resolve({ exito: false, motivo: 'sin_confirmacion' });
+                            }
+                        }, 3000);
+                        
+                    } else {
+                        agregarLog('❌ No se encontró botón de envío', 'error');
+                        resolve({ exito: false, motivo: 'sin_boton' });
+                    }
+
+                } catch (error) {
+                    agregarLog('❌ Error: ' + error.message, 'error');
+                    resolve({ exito: false, motivo: 'error: ' + error.message });
+                }
+            });
         }
 
         // ============================================
@@ -715,30 +741,119 @@
 
         function verificarConfirmacion(doc) {
             try {
-                const textos = ['gracias', 'enviado', 'completado', 'success', 'confirmación', 'confirmacion', 'éxito', 'exito', 'thank', 'received'];
+                const textosConfirmacion = ['gracias', 'enviado', 'completado', 'success', 'confirmación', 'confirmacion', 
+                                           'éxito', 'exito', 'thank', 'received', 'recibido', 'aceptado', 'ok'];
                 const bodyText = doc.body ? doc.body.textContent.toLowerCase() : '';
-                const contieneConfirmacion = textos.some(t => bodyText.includes(t));
+                const contieneConfirmacion = textosConfirmacion.some(t => bodyText.includes(t));
                 
                 if (contieneConfirmacion) {
-                    contadorEnvios++;
-                    document.getElementById('contadorEnvios').textContent = contadorEnvios;
-                    actualizarEstado(`✅ Encuesta #${contadorEnvios} enviada correctamente`);
-                    console.log(`✅ Encuesta #${contadorEnvios} enviada con éxito`);
-                    intentosFallidos = 0;
+                    agregarLog('✅ Confirmación de envío detectada', 'success');
                     return true;
-                } else {
-                    console.warn('⚠️ No se detectó confirmación de envío');
-                    intentosFallidos++;
-                    return false;
                 }
+                
+                // Buscar elementos de confirmación
+                const elementosConfirmacion = doc.querySelectorAll('.success, .thank-you, .confirmation, .gracias, [role="alert"]');
+                for (const el of elementosConfirmacion) {
+                    if (el.offsetParent !== null) {
+                        agregarLog('✅ Elemento de confirmación visible', 'success');
+                        return true;
+                    }
+                }
+                
+                return false;
             } catch (e) {
-                console.warn('Error al verificar:', e);
                 return false;
             }
         }
 
         // ============================================
-        // PROCESO PRINCIPAL
+        // CICLO COMPLETO: Rellenar → Enviar → Siguiente
+        // ============================================
+
+        async function ejecutarCicloCompleto() {
+            if (cicloEnEjecucion) return;
+            cicloEnEjecucion = true;
+
+            const veces = parseInt(document.getElementById('numVeces').value) || 3;
+            totalPendientes = veces;
+            actualizarContadores(0, veces);
+            actualizarProgreso(0);
+
+            agregarLog(`🚀 INICIANDO CICLO: ${veces} encuesta(s)`, 'info');
+            actualizarEstado(`🔄 Procesando 0/${veces}...`, '#667eea');
+
+            let ejecutadas = 0;
+            let fallosConsecutivos = 0;
+            const MAX_FALLOS = 5;
+
+            while (ejecutadas < veces && !detenerSolicitado && fallosConsecutivos < MAX_FALLOS) {
+                ejecutadas++;
+                const porcentaje = (ejecutadas / veces) * 100;
+                actualizarProgreso(porcentaje);
+                actualizarEstado(`🔄 Rellenando ${ejecutadas}/${veces}...`, '#667eea');
+                mostrarOverlay(`📝 Encuesta ${ejecutadas}/${veces}`, 'Rellenando campos...');
+
+                agregarLog(`📋 Iniciando encuesta ${ejecutadas}/${veces}`, 'info');
+
+                // ========== PASO 1: RELLENAR Y ENVIAR ==========
+                const resultado = await rellenarYEnviarEncuesta();
+
+                if (resultado.exito) {
+                    fallosConsecutivos = 0;
+                    agregarLog(`✅ Encuesta ${ejecutadas} COMPLETADA`, 'success');
+                } else {
+                    fallosConsecutivos++;
+                    agregarLog(`⚠️ Encuesta ${ejecutadas} fallida (${fallosConsecutivos}/${MAX_FALLOS})`, 'warning');
+                }
+
+                // Si hay más encuestas pendientes, recargar para la siguiente
+                if (ejecutadas < veces && !detenerSolicitado) {
+                    const url = document.getElementById('urlEncuesta').value.trim();
+                    if (url) {
+                        agregarLog('🔄 Recargando para siguiente encuesta...', 'info');
+                        mostrarOverlay('🔄 Cargando siguiente...', `Preparando encuesta ${ejecutadas + 1}/${veces}`);
+                        
+                        const iframe = document.getElementById('frameEncuesta');
+                        iframe.src = url;
+                        
+                        // Esperar carga
+                        await sleep(4000);
+                        mostrarOverlay('', '', false);
+                        await sleep(1000);
+                    }
+                }
+
+                // Pequeña pausa entre ciclos
+                await sleep(500);
+            }
+
+            // ========== FIN DEL CICLO ==========
+            cicloEnEjecucion = false;
+
+            if (detenerSolicitado) {
+                agregarLog('⏹ Ciclo detenido por el usuario', 'warning');
+                actualizarEstado('⏹ Detenido por usuario', '#fc8181');
+                detenerSolicitado = false;
+            } else if (fallosConsecutivos >= MAX_FALLOS) {
+                agregarLog(`❌ Demasiados fallos (${MAX_FALLOS}), ciclo terminado`, 'error');
+                actualizarEstado('❌ Terminado por fallos', '#fc8181');
+            } else {
+                agregarLog(`🎉 CICLO COMPLETADO: ${contadorCompletadas} encuestas enviadas`, 'success');
+                actualizarEstado(`✅ Completado: ${contadorCompletadas} encuestas`, '#48bb78');
+                actualizarProgreso(100);
+                mostrarOverlay('🎉 Proceso completado', `${contadorCompletadas} encuestas enviadas`);
+                setTimeout(() => {
+                    mostrarOverlay('', '', false);
+                }, 5000);
+            }
+
+            procesoActivo = false;
+            actualizarContadores(contadorCompletadas, 0);
+            document.getElementById('progressFill').style.width = '100%';
+        }
+
+        // ============================================
+        // INICIAR / DETENER PROCESO
         // ============================================
 
         function iniciarProceso() {
@@ -747,11 +862,13 @@
 
             if (!url) {
                 alert('❌ Por favor, ingresa una URL de encuesta válida');
+                agregarLog('❌ Error: URL vacía', 'error');
                 return;
             }
 
-            if (procesoActivo) {
+            if (procesoActivo || cicloEnEjecucion) {
                 alert('⚠️ Ya hay un proceso en ejecución');
+                agregarLog('⚠️ Intento de inicio mientras proceso activo', 'warning');
                 return;
             }
 
@@ -761,21 +878,23 @@
             }
 
             procesoActivo = true;
-            contadorEnvios = 0;
-            intentosFallidos = 0;
-            ejecucionesPendientes = veces;
+            detenerSolicitado = false;
+            contadorCompletadas = 0;
             document.getElementById('contadorEnvios').textContent = '0';
-            actualizarProgreso(0);
+            document.getElementById('contadorPendientes').textContent = veces;
+
+            agregarLog(`🚀 INICIANDO con ${veces} encuesta(s)`, 'info');
+            agregarLog(`📌 URL: ${url}`, 'info');
 
             // Cargar iframe
             const iframe = document.getElementById('frameEncuesta');
             iframe.src = url;
+            mostrarOverlay('Cargando encuesta...', 'Preparando el sistema');
             actualizarEstado('📥 Cargando encuesta...', '#f6ad55');
-            mostrarOverlay('Cargando encuesta...');
 
-            // Esperar carga y comenzar
+            // Esperar carga y comenzar ciclo
             let intentosCarga = 0;
-            const maxIntentosCarga = 15;
+            const MAX_INTENTOS_CARGA = 20;
 
             const esperarCarga = setInterval(() => {
                 intentosCarga++;
@@ -783,78 +902,34 @@
                     const doc = iframe.contentDocument || iframe.contentWindow.document;
                     if (doc && doc.body && doc.body.children.length > 0) {
                         clearInterval(esperarCarga);
-                        mostrarOverlay('', false);
-                        actualizarEstado('✅ Encuesta cargada, comenzando...', '#48bb78');
-                        ejecutarCicloCompleto(veces);
+                        mostrarOverlay('', '', false);
+                        agregarLog('✅ Iframe cargado correctamente', 'success');
+                        actualizarEstado('🚀 Iniciando ciclo...', '#48bb78');
+                        ejecutarCicloCompleto();
                     }
                 } catch (e) {
-                    if (intentosCarga >= maxIntentosCarga) {
+                    if (intentosCarga >= MAX_INTENTOS_CARGA) {
                         clearInterval(esperarCarga);
-                        mostrarOverlay('', false);
-                        actualizarEstado('⚠️ Carga parcial, intentando igual...', '#f6ad55');
-                        ejecutarCicloCompleto(veces);
+                        mostrarOverlay('', '', false);
+                        agregarLog('⚠️ Carga parcial, iniciando de todos modos...', 'warning');
+                        ejecutarCicloCompleto();
                     }
                 }
-            }, 1000);
-        }
-
-        async function ejecutarCicloCompleto(veces) {
-            let ejecutadas = 0;
-            const total = veces;
-
-            while (procesoActivo && ejecutadas < total && intentosFallidos < MAX_INTENTOS) {
-                ejecutadas++;
-                const porcentaje = (ejecutadas / total) * 100;
-                actualizarProgreso(porcentaje);
-                actualizarEstado(`🔄 Rellenando encuesta ${ejecutadas}/${total}...`, '#667eea');
-                mostrarOverlay(`📝 Procesando ${ejecutadas}/${total}`);
-
-                await sleep(2000);
-
-                const exito = rellenarEncuestaEnIframe();
-                
-                if (!exito) {
-                    intentosFallidos++;
-                    console.warn(`⚠️ Intento ${ejecutadas} fallido (${intentosFallidos}/${MAX_INTENTOS})`);
-                }
-
-                await sleep(3000);
-
-                // Si queda otra, recargar
-                if (procesoActivo && ejecutadas < total) {
-                    const iframe = document.getElementById('frameEncuesta');
-                    const url = document.getElementById('urlEncuesta').value.trim();
-                    iframe.src = url;
-                    mostrarOverlay('🔄 Cargando siguiente...');
-                    await sleep(3000);
-                    mostrarOverlay('', false);
-                }
-            }
-
-            // Finalizar
-            if (intentosFallidos >= MAX_INTENTOS) {
-                actualizarEstado(`❌ Demasiados fallos (${MAX_INTENTOS}), deteniendo`, '#fc8181');
-            } else {
-                actualizarEstado(`✅ Proceso completado: ${ejecutadas} encuestas enviadas`, '#48bb78');
-            }
-            
-            procesoActivo = false;
-            mostrarOverlay('', false);
-            actualizarProgreso(100);
-            
-            setTimeout(() => {
-                document.getElementById('progressBar').style.display = 'none';
-                document.getElementById('progressFill').style.width = '0%';
-            }, 3000);
+            }, 1500);
         }
 
         function detenerProceso() {
-            procesoActivo = false;
-            actualizarEstado('⏹ Proceso detenido por el usuario', '#fc8181');
-            mostrarOverlay('', false);
-            if (intervaloProceso) {
-                clearInterval(intervaloProceso);
-                intervaloProceso = null;
+            if (procesoActivo || cicloEnEjecucion) {
+                detenerSolicitado = true;
+                procesoActivo = false;
+                agregarLog('⏹ Deteniendo proceso...', 'warning');
+                actualizarEstado('⏹ Deteniendo...', '#fc8181');
+                mostrarOverlay('⏹ Deteniendo...', 'Finalizando ciclo actual');
+                setTimeout(() => {
+                    mostrarOverlay('', '', false);
+                }, 3000);
+            } else {
+                agregarLog('ℹ️ No hay proceso activo para detener', 'info');
             }
         }
 
@@ -862,18 +937,11 @@
         // INICIALIZACIÓN
         // ============================================
 
-        console.log('🤖 Automatizador de Encuestas cargado');
-        console.log('📌 GitHub Pages | Versión 2.0');
-        console.log('ℹ️ Ingresa la URL de tu encuesta y presiona "Iniciar"');
+        console.log('🤖 Automatizador de Encuestas - Ciclo Completo');
+        console.log('📌 Versión: 2.0 - Rellena, envía, confirma y sigue');
+        console.log('ℹ️ Ingresa URL, elige veces y presiona "Iniciar Ciclo"');
 
-        // Cargar URL inicial si existe
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputUrl = document.getElementById('urlEncuesta');
-            if (inputUrl.value) {
-                const iframe = document.getElementById('frameEncuesta');
-                iframe.src = inputUrl.value;
-            }
-        });
+        agregarLog('💡 Sistema listo. Ingresa una URL y presiona "Iniciar Ciclo"', 'info');
     </script>
 
 </body>

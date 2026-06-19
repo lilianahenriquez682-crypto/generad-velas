@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automatizador de Encuestas</title>
+    <title>🤖 Automatizador de Encuestas</title>
     <style>
         * {
             margin: 0;
@@ -20,19 +20,30 @@
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+            padding: 25px;
             border-radius: 15px;
             margin-bottom: 20px;
             color: white;
+            text-align: center;
         }
 
         .header h1 {
-            font-size: 2em;
+            font-size: 2.2em;
             margin-bottom: 5px;
         }
 
         .header p {
             opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .header .badge-github {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-top: 10px;
         }
 
         .controls {
@@ -79,7 +90,7 @@
         }
 
         .btn {
-            padding: 12px 30px;
+            padding: 12px 25px;
             border: none;
             border-radius: 10px;
             font-size: 1em;
@@ -87,7 +98,7 @@
             cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary {
@@ -131,6 +142,16 @@
             transform: translateY(-2px);
         }
 
+        .btn-github {
+            background: #24292e;
+            color: white;
+        }
+
+        .btn-github:hover {
+            background: #1a1e22;
+            transform: translateY(-2px);
+        }
+
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -163,11 +184,29 @@
             font-weight: 700;
         }
 
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #2a2f4a;
+            border-radius: 3px;
+            margin: 10px 0 20px 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 3px;
+        }
+
         .frame-container {
             background: #1a1f3a;
             border-radius: 15px;
             padding: 10px;
-            height: 80vh;
+            height: 70vh;
             position: relative;
             overflow: hidden;
         }
@@ -182,32 +221,28 @@
 
         .frame-overlay {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px 15px;
-            border-radius: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            padding: 30px 40px;
+            border-radius: 15px;
             color: white;
-            font-size: 0.9em;
-            display: none;
-            backdrop-filter: blur(5px);
-        }
-
-        .loading {
+            font-size: 1.2em;
             display: none;
             text-align: center;
-            padding: 40px;
-            color: #a0aec0;
+            backdrop-filter: blur(10px);
+            border: 2px solid #667eea;
         }
 
-        .loading .spinner {
-            width: 50px;
-            height: 50px;
+        .frame-overlay .spinner {
+            width: 40px;
+            height: 40px;
             border: 4px solid #2a2f4a;
             border-top: 4px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
         }
 
         @keyframes spin {
@@ -215,22 +250,21 @@
             100% { transform: rotate(360deg); }
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #2a2f4a;
-            border-radius: 3px;
-            margin: 10px 0;
-            overflow: hidden;
-            display: none;
+        .footer {
+            text-align: center;
+            color: #4a4f6a;
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 0.9em;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.5s;
-            border-radius: 3px;
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -241,7 +275,14 @@
                 width: 100%;
             }
             .frame-container {
-                height: 60vh;
+                height: 50vh;
+            }
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .btn {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -251,15 +292,17 @@
     <div class="header">
         <h1>🤖 Automatizador de Encuestas</h1>
         <p>Ingresa el link de tu encuesta y el sistema la rellenará automáticamente</p>
+        <span class="badge-github">🚀 GitHub Pages</span>
     </div>
 
     <div class="controls">
-        <input type="text" id="urlEncuesta" placeholder="https://ejemplo.com/encuesta" value="https://forms.gle/tu-link">
+        <input type="text" id="urlEncuesta" placeholder="https://ejemplo.com/encuesta" value="">
         <label>Veces:</label>
         <input type="number" id="numVeces" value="3" min="1" max="50">
         <button class="btn btn-primary" onclick="iniciarProceso()">🚀 Iniciar</button>
         <button class="btn btn-danger" onclick="detenerProceso()">⏹ Detener</button>
         <button class="btn btn-warning" onclick="recargarIframe()">🔄 Recargar</button>
+        <button class="btn btn-success" onclick="limpiarTodo()">🗑️ Limpiar</button>
     </div>
 
     <div class="status-bar">
@@ -273,12 +316,14 @@
 
     <div class="frame-container">
         <iframe id="frameEncuesta" src="about:blank"></iframe>
-        <div class="frame-overlay" id="frameOverlay">🔒 Procesando...</div>
+        <div class="frame-overlay" id="frameOverlay">
+            <div class="spinner"></div>
+            <p id="overlayTexto">Procesando...</p>
+        </div>
     </div>
 
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>Cargando encuesta...</p>
+    <div class="footer">
+        <p>🔒 Automatización de encuestas · <a href="#" onclick="verInstrucciones()">Instrucciones</a></p>
     </div>
 
     <script>
@@ -288,15 +333,18 @@
 
         const DATOS = {
             nombres: ['Ana', 'Carlos', 'María', 'José', 'Laura', 'Pedro', 'Sofía', 'Luis', 'Elena', 'Miguel', 
-                     'Carmen', 'Javier', 'Patricia', 'Roberto', 'Isabel', 'Andrés', 'Raquel', 'David', 'Marta', 'Pablo'],
+                     'Carmen', 'Javier', 'Patricia', 'Roberto', 'Isabel', 'Andrés', 'Raquel', 'David', 'Marta', 'Pablo',
+                     'Lucía', 'Diego', 'Paula', 'Alejandro', 'Natalia', 'Sergio', 'Andrea', 'Manuel', 'Valentina', 'Carlos'],
             apellidos: ['García', 'Martínez', 'López', 'Rodríguez', 'Fernández', 'González', 'Pérez', 'Sánchez',
-                       'Ramírez', 'Torres', 'Rivera', 'Morales', 'Ortiz', 'Cruz', 'Reyes', 'Gutiérrez', 'Mendoza'],
-            dominios: ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'protonmail.com', 'icloud.com'],
+                       'Ramírez', 'Torres', 'Rivera', 'Morales', 'Ortiz', 'Cruz', 'Reyes', 'Gutiérrez', 'Mendoza',
+                       'Herrera', 'Flores', 'Romero', 'Álvarez', 'Castro', 'Gómez', 'Díaz', 'Vargas', 'Ramos'],
+            dominios: ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'protonmail.com', 'icloud.com', 'gmx.com'],
             generos: ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir'],
             satisfaccion: ['Muy satisfecho', 'Satisfecho', 'Neutral', 'Insatisfecho', 'Muy insatisfecho'],
             frecuencia: ['Diario', 'Semanal', 'Mensual', 'Raramente', 'Nunca'],
             si_no: ['Sí', 'No', 'Tal vez'],
             numeros: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+            edades: Array.from({length: 48}, (_, i) => i + 18),
             comentarios: [
                 'Excelente servicio, muy recomendable',
                 'Buena experiencia en general, volvería a usar el servicio',
@@ -311,9 +359,10 @@
                 'Volveré a usar el servicio sin dudas',
                 'Recomiendo a todos este servicio',
                 'Excelente relación calidad-precio',
-                'Muy profesional y confiable'
+                'Muy profesional y confiable',
+                'Superó mis expectativas',
+                'Buen producto, buena atención'
             ],
-            edades: Array.from({length: 48}, (_, i) => i + 18), // 18-65
             mejoras: ['Precio', 'Calidad', 'Atención', 'Velocidad', 'Diseño', 'Funcionalidad', 'Ninguno']
         };
 
@@ -323,9 +372,10 @@
 
         let procesoActivo = false;
         let contadorEnvios = 0;
-        let intervalId = null;
+        let intervaloProceso = null;
         let intentosFallidos = 0;
         const MAX_INTENTOS = 10;
+        let ejecucionesPendientes = 0;
 
         // ============================================
         // FUNCIONES DE GENERACIÓN DE DATOS
@@ -342,7 +392,8 @@
         function generarEmail() {
             const nombre = randomItem(DATOS.nombres).toLowerCase();
             const apellido = randomItem(DATOS.apellidos).toLowerCase();
-            return `${nombre}.${apellido}${Math.floor(Math.random() * 999)}@${randomItem(DATOS.dominios)}`;
+            const num = Math.floor(Math.random() * 999);
+            return `${nombre}.${apellido}${num}@${randomItem(DATOS.dominios)}`;
         }
 
         function generarEdad() {
@@ -386,6 +437,80 @@
         }
 
         // ============================================
+        // FUNCIONES DE UTILIDAD
+        // ============================================
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function actualizarEstado(texto, color = '#48bb78') {
+            const estado = document.getElementById('estadoTexto');
+            estado.textContent = texto;
+            estado.style.color = color;
+        }
+
+        function actualizarProgreso(porcentaje) {
+            const bar = document.getElementById('progressBar');
+            const fill = document.getElementById('progressFill');
+            bar.style.display = 'block';
+            fill.style.width = Math.min(porcentaje, 100) + '%';
+        }
+
+        function mostrarOverlay(texto, mostrar = true) {
+            const overlay = document.getElementById('frameOverlay');
+            const textoEl = document.getElementById('overlayTexto');
+            if (mostrar) {
+                textoEl.textContent = texto;
+                overlay.style.display = 'block';
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
+
+        function recargarIframe() {
+            const iframe = document.getElementById('frameEncuesta');
+            const url = document.getElementById('urlEncuesta').value.trim();
+            if (url) {
+                iframe.src = url;
+                actualizarEstado('🔄 Recargando...', '#f6ad55');
+                mostrarOverlay('Cargando encuesta...');
+                setTimeout(() => {
+                    mostrarOverlay('', false);
+                    actualizarEstado('✅ Recargado, esperando acción', '#48bb78');
+                }, 4000);
+            } else {
+                alert('❌ Por favor, ingresa una URL primero');
+            }
+        }
+
+        function limpiarTodo() {
+            detenerProceso();
+            document.getElementById('contadorEnvios').textContent = '0';
+            contadorEnvios = 0;
+            intentosFallidos = 0;
+            actualizarEstado('🧹 Todo limpiado', '#a0aec0');
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            mostrarOverlay('', false);
+        }
+
+        function verInstrucciones() {
+            alert(
+                '📌 INSTRUCCIONES DE USO\n\n' +
+                '1. Pega el LINK de tu encuesta en el campo URL\n' +
+                '2. Elige cuántas VECES quieres rellenarla\n' +
+                '3. Presiona "INICIAR"\n\n' +
+                '⚠️ IMPORTANTE:\n' +
+                '• Algunas páginas bloquean los iframes (problema de CORS)\n' +
+                '• Google Forms a veces funciona, a veces no\n' +
+                '• Si no carga, abre la encuesta en otra pestaña\n' +
+                '• En la consola F12 puedes ejecutar el script manualmente\n\n' +
+                '🔒 Solo para fines educativos y de prueba'
+            );
+        }
+
+        // ============================================
         // FUNCIÓN PRINCIPAL: RELLENAR IFRAME
         // ============================================
 
@@ -394,7 +519,7 @@
                 const iframe = document.getElementById('frameEncuesta');
                 const doc = iframe.contentDocument || iframe.contentWindow.document;
                 
-                if (!doc || !doc.body) {
+                if (!doc || !doc.body || doc.body.children.length === 0) {
                     console.warn('⚠️ Iframe no cargado completamente');
                     return false;
                 }
@@ -402,34 +527,37 @@
                 console.log('🔄 Rellenando encuesta en:', doc.URL);
                 let camposRellenados = 0;
 
-                // ========== 1. BUSCAR TODOS LOS INPUTS ==========
+                // ========== 1. BUSCAR TODOS LOS CAMPOS ==========
                 const inputs = doc.querySelectorAll('input, textarea, select');
                 
                 inputs.forEach((elemento) => {
                     try {
-                        // Saltar elementos ocultos o deshabilitados
                         if (elemento.type === 'hidden' || elemento.disabled) return;
+                        if (elemento.offsetParent === null) return; // No visible
                         
                         const tipo = elemento.type ? elemento.type.toLowerCase() : '';
                         const tag = elemento.tagName.toLowerCase();
                         const name = (elemento.name || '').toLowerCase();
                         const id = (elemento.id || '').toLowerCase();
                         const placeholder = (elemento.placeholder || '').toLowerCase();
-                        const value = elemento.value || '';
                         
-                        // ========== 2. DETECTAR TIPO DE CAMPO ==========
+                        // ========== 2. PROCESAR POR TIPO ==========
                         
-                        // --- TEXT / EMAIL / NUMBER ---
+                        // --- TEXT / EMAIL / TEL / URL ---
                         if (tipo === 'text' || tipo === 'email' || tipo === 'tel' || tipo === 'url' || tipo === 'search') {
                             let respuesta = '';
+                            const textoCompleto = name + ' ' + id + ' ' + placeholder;
                             
-                            // Detectar por nombre o placeholder
-                            if (name.includes('nombre') || name.includes('name') || placeholder.includes('nombre') || placeholder.includes('name')) {
+                            if (textoCompleto.includes('nombre') || textoCompleto.includes('name')) {
                                 respuesta = generarNombre();
-                            } else if (name.includes('email') || name.includes('correo') || placeholder.includes('email') || placeholder.includes('correo')) {
+                            } else if (textoCompleto.includes('email') || textoCompleto.includes('correo')) {
                                 respuesta = generarEmail();
-                            } else if (name.includes('edad') || name.includes('age') || placeholder.includes('edad') || placeholder.includes('age')) {
+                            } else if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
                                 respuesta = String(generarEdad());
+                            } else if (textoCompleto.includes('tel') || textoCompleto.includes('phone') || textoCompleto.includes('telefono')) {
+                                respuesta = '3' + String(Math.floor(Math.random() * 900000000) + 100000000);
+                            } else if (textoCompleto.includes('ciudad') || textoCompleto.includes('city')) {
+                                respuesta = randomItem(['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Buenos Aires', 'Ciudad de México', 'Madrid', 'Santiago', 'Lima']);
                             } else {
                                 respuesta = generarComentario().substring(0, 50);
                             }
@@ -445,9 +573,10 @@
                         // --- NUMBER ---
                         else if (tipo === 'number') {
                             let respuesta = '';
-                            if (name.includes('edad') || name.includes('age')) {
+                            const textoCompleto = name + ' ' + id + ' ' + placeholder;
+                            if (textoCompleto.includes('edad') || textoCompleto.includes('age')) {
                                 respuesta = String(generarEdad());
-                            } else if (name.includes('calif') || name.includes('rating') || name.includes('puntuacion')) {
+                            } else if (textoCompleto.includes('calif') || textoCompleto.includes('rating') || textoCompleto.includes('puntuacion')) {
                                 respuesta = generarCalificacion();
                             } else {
                                 respuesta = String(Math.floor(Math.random() * 10) + 1);
@@ -462,25 +591,21 @@
                         else if (tipo === 'radio') {
                             const nameRadio = elemento.name;
                             if (nameRadio && !elemento.checked) {
-                                // Solo procesar si no está marcado
                                 const grupo = doc.querySelectorAll(`input[name="${nameRadio}"]`);
-                                if (grupo.length > 0) {
-                                    // Seleccionar aleatoriamente una opción del grupo
-                                    const opcionesDisponibles = Array.from(grupo).filter(el => !el.disabled && el.offsetParent !== null);
-                                    if (opcionesDisponibles.length > 0) {
-                                        const elegido = randomItem(opcionesDisponibles);
-                                        elegido.checked = true;
-                                        elegido.dispatchEvent(new Event('change', { bubbles: true }));
-                                        elegido.dispatchEvent(new Event('click', { bubbles: true }));
-                                        camposRellenados++;
-                                    }
+                                const opcionesDisponibles = Array.from(grupo).filter(el => !el.disabled && el.offsetParent !== null);
+                                if (opcionesDisponibles.length > 0) {
+                                    const elegido = randomItem(opcionesDisponibles);
+                                    elegido.checked = true;
+                                    elegido.dispatchEvent(new Event('change', { bubbles: true }));
+                                    elegido.dispatchEvent(new Event('click', { bubbles: true }));
+                                    camposRellenados++;
                                 }
                             }
                         }
                         
                         // --- CHECKBOX ---
                         else if (tipo === 'checkbox') {
-                            if (Math.random() > 0.5) { // 50% de probabilidad
+                            if (Math.random() > 0.4) {
                                 elemento.checked = true;
                                 elemento.dispatchEvent(new Event('change', { bubbles: true }));
                                 elemento.dispatchEvent(new Event('click', { bubbles: true }));
@@ -502,11 +627,8 @@
                         // --- TEXTAREA ---
                         else if (tag === 'textarea') {
                             let respuesta = generarComentario();
-                            // Ajustar longitud según el atributo rows
                             const rows = parseInt(elemento.rows) || 3;
-                            if (rows <= 2) {
-                                respuesta = respuesta.substring(0, 30);
-                            }
+                            if (rows <= 2) respuesta = respuesta.substring(0, 30);
                             elemento.value = respuesta;
                             elemento.dispatchEvent(new Event('input', { bubbles: true }));
                             elemento.dispatchEvent(new Event('change', { bubbles: true }));
@@ -536,10 +658,12 @@
                         }
                         
                     } catch (e) {
-                        console.warn('Error al procesar elemento:', e);
+                        console.warn('Error en elemento:', e);
                     }
                 });
 
+                console.log(`✅ Campos rellenados: ${camposRellenados}`);
+                
                 // ========== 3. BUSCAR BOTÓN DE ENVÍO ==========
                 const botones = doc.querySelectorAll('input[type="submit"], button[type="submit"], button:not([type]), .btn-submit, .submit, [role="button"]');
                 let botonEncontrado = null;
@@ -548,14 +672,14 @@
                     if (btn.offsetParent !== null && !btn.disabled) {
                         const texto = (btn.textContent || btn.value || '').toLowerCase();
                         if (texto.includes('enviar') || texto.includes('submit') || texto.includes('envi') || 
-                            texto.includes('send') || texto.includes('aceptar') || texto.includes('ok')) {
+                            texto.includes('send') || texto.includes('aceptar') || texto.includes('ok') || 
+                            texto.includes('continuar') || texto.includes('siguiente')) {
                             botonEncontrado = btn;
                             break;
                         }
                     }
                 }
 
-                // Si no encuentra botón por texto, usar el primero visible
                 if (!botonEncontrado) {
                     for (const btn of botones) {
                         if (btn.offsetParent !== null && !btn.disabled) {
@@ -568,9 +692,7 @@
                 if (botonEncontrado) {
                     console.log('✅ Botón de envío encontrado, enviando...');
                     botonEncontrado.click();
-                    camposRellenados++;
                     
-                    // Esperar un momento y verificar si hay confirmación
                     setTimeout(() => {
                         verificarConfirmacion(doc);
                     }, 2000);
@@ -588,56 +710,30 @@
         }
 
         // ============================================
-        // VERIFICAR CONFIRMACIÓN DE ENVÍO
+        // VERIFICAR CONFIRMACIÓN
         // ============================================
 
         function verificarConfirmacion(doc) {
             try {
-                const textos = ['gracias', 'enviado', 'completado', 'success', 'confirmación', 'confirmacion', 'éxito', 'exito'];
+                const textos = ['gracias', 'enviado', 'completado', 'success', 'confirmación', 'confirmacion', 'éxito', 'exito', 'thank', 'received'];
                 const bodyText = doc.body ? doc.body.textContent.toLowerCase() : '';
                 const contieneConfirmacion = textos.some(t => bodyText.includes(t));
                 
                 if (contieneConfirmacion) {
                     contadorEnvios++;
                     document.getElementById('contadorEnvios').textContent = contadorEnvios;
-                    actualizarEstado(`✅ Encuesta #${contadorEnvios} enviada correctamente`, '#48bb78');
+                    actualizarEstado(`✅ Encuesta #${contadorEnvios} enviada correctamente`);
                     console.log(`✅ Encuesta #${contadorEnvios} enviada con éxito`);
                     intentosFallidos = 0;
+                    return true;
                 } else {
                     console.warn('⚠️ No se detectó confirmación de envío');
                     intentosFallidos++;
+                    return false;
                 }
             } catch (e) {
-                console.warn('Error al verificar confirmación:', e);
-            }
-        }
-
-        // ============================================
-        // FUNCIONES DE CONTROL
-        // ============================================
-
-        function actualizarEstado(texto, color = '#667eea') {
-            const estado = document.getElementById('estadoTexto');
-            estado.textContent = texto;
-            estado.style.color = color;
-        }
-
-        function actualizarProgreso(porcentaje) {
-            const bar = document.getElementById('progressBar');
-            const fill = document.getElementById('progressFill');
-            bar.style.display = 'block';
-            fill.style.width = porcentaje + '%';
-        }
-
-        function recargarIframe() {
-            const iframe = document.getElementById('frameEncuesta');
-            const url = document.getElementById('urlEncuesta').value.trim();
-            if (url) {
-                iframe.src = url;
-                actualizarEstado('🔄 Recargando...', '#f6ad55');
-                setTimeout(() => {
-                    actualizarEstado('✅ Recargado, esperando acción', '#667eea');
-                }, 3000);
+                console.warn('Error al verificar:', e);
+                return false;
             }
         }
 
@@ -667,17 +763,19 @@
             procesoActivo = true;
             contadorEnvios = 0;
             intentosFallidos = 0;
+            ejecucionesPendientes = veces;
             document.getElementById('contadorEnvios').textContent = '0';
+            actualizarProgreso(0);
 
             // Cargar iframe
             const iframe = document.getElementById('frameEncuesta');
             iframe.src = url;
             actualizarEstado('📥 Cargando encuesta...', '#f6ad55');
-            document.getElementById('frameOverlay').style.display = 'block';
+            mostrarOverlay('Cargando encuesta...');
 
-            // Esperar que cargue y comenzar
+            // Esperar carga y comenzar
             let intentosCarga = 0;
-            const maxIntentosCarga = 10;
+            const maxIntentosCarga = 15;
 
             const esperarCarga = setInterval(() => {
                 intentosCarga++;
@@ -685,92 +783,78 @@
                     const doc = iframe.contentDocument || iframe.contentWindow.document;
                     if (doc && doc.body && doc.body.children.length > 0) {
                         clearInterval(esperarCarga);
-                        document.getElementById('frameOverlay').style.display = 'none';
+                        mostrarOverlay('', false);
                         actualizarEstado('✅ Encuesta cargada, comenzando...', '#48bb78');
-                        
-                        // Iniciar el proceso de relleno
-                        ejecutarRelleno(veces);
+                        ejecutarCicloCompleto(veces);
                     }
                 } catch (e) {
-                    // Error de cross-origin, pero intentamos igual
                     if (intentosCarga >= maxIntentosCarga) {
                         clearInterval(esperarCarga);
-                        document.getElementById('frameOverlay').style.display = 'none';
-                        actualizarEstado('⚠️ No se pudo cargar completamente, intentando igual...', '#f6ad55');
-                        ejecutarRelleno(veces);
+                        mostrarOverlay('', false);
+                        actualizarEstado('⚠️ Carga parcial, intentando igual...', '#f6ad55');
+                        ejecutarCicloCompleto(veces);
                     }
                 }
             }, 1000);
         }
 
-        function ejecutarRelleno(veces) {
+        async function ejecutarCicloCompleto(veces) {
             let ejecutadas = 0;
             const total = veces;
 
-            function cicloRelleno() {
-                if (!procesoActivo || ejecutadas >= total || intentosFallidos >= MAX_INTENTOS) {
-                    if (intentosFallidos >= MAX_INTENTOS) {
-                        actualizarEstado(`❌ Demasiados fallos (${MAX_INTENTOS}), deteniendo`, '#fc8181');
-                    } else {
-                        actualizarEstado(`✅ Proceso completado: ${ejecutadas} encuestas enviadas`, '#48bb78');
-                    }
-                    procesoActivo = false;
-                    document.getElementById('frameOverlay').style.display = 'none';
-                    actualizarProgreso(100);
-                    setTimeout(() => {
-                        document.getElementById('progressBar').style.display = 'none';
-                        document.getElementById('progressFill').style.width = '0%';
-                    }, 3000);
-                    return;
-                }
-
+            while (procesoActivo && ejecutadas < total && intentosFallidos < MAX_INTENTOS) {
                 ejecutadas++;
                 const porcentaje = (ejecutadas / total) * 100;
                 actualizarProgreso(porcentaje);
                 actualizarEstado(`🔄 Rellenando encuesta ${ejecutadas}/${total}...`, '#667eea');
-                document.getElementById('frameOverlay').style.display = 'block';
-                document.getElementById('frameOverlay').textContent = `📝 Procesando ${ejecutadas}/${total}`;
+                mostrarOverlay(`📝 Procesando ${ejecutadas}/${total}`);
 
-                // Esperar un momento para que cargue después del envío anterior
-                setTimeout(() => {
-                    const exito = rellenarEncuestaEnIframe();
-                    
-                    if (!exito) {
-                        intentosFallidos++;
-                        console.warn(`⚠️ Intento ${ejecutadas} fallido (${intentosFallidos}/${MAX_INTENTOS})`);
-                    }
+                await sleep(2000);
 
-                    // Recargar el iframe para la siguiente
-                    setTimeout(() => {
-                        if (procesoActivo && ejecutadas < total) {
-                            const iframe = document.getElementById('frameEncuesta');
-                            const url = document.getElementById('urlEncuesta').value.trim();
-                            iframe.src = url;
-                            document.getElementById('frameOverlay').textContent = '🔄 Cargando siguiente...';
-                            
-                            // Esperar recarga y continuar
-                            setTimeout(() => {
-                                cicloRelleno();
-                            }, 3000);
-                        } else {
-                            cicloRelleno();
-                        }
-                    }, 2000);
-                    
-                }, 2000);
+                const exito = rellenarEncuestaEnIframe();
+                
+                if (!exito) {
+                    intentosFallidos++;
+                    console.warn(`⚠️ Intento ${ejecutadas} fallido (${intentosFallidos}/${MAX_INTENTOS})`);
+                }
+
+                await sleep(3000);
+
+                // Si queda otra, recargar
+                if (procesoActivo && ejecutadas < total) {
+                    const iframe = document.getElementById('frameEncuesta');
+                    const url = document.getElementById('urlEncuesta').value.trim();
+                    iframe.src = url;
+                    mostrarOverlay('🔄 Cargando siguiente...');
+                    await sleep(3000);
+                    mostrarOverlay('', false);
+                }
             }
 
-            // Iniciar ciclo
-            cicloRelleno();
+            // Finalizar
+            if (intentosFallidos >= MAX_INTENTOS) {
+                actualizarEstado(`❌ Demasiados fallos (${MAX_INTENTOS}), deteniendo`, '#fc8181');
+            } else {
+                actualizarEstado(`✅ Proceso completado: ${ejecutadas} encuestas enviadas`, '#48bb78');
+            }
+            
+            procesoActivo = false;
+            mostrarOverlay('', false);
+            actualizarProgreso(100);
+            
+            setTimeout(() => {
+                document.getElementById('progressBar').style.display = 'none';
+                document.getElementById('progressFill').style.width = '0%';
+            }, 3000);
         }
 
         function detenerProceso() {
             procesoActivo = false;
             actualizarEstado('⏹ Proceso detenido por el usuario', '#fc8181');
-            document.getElementById('frameOverlay').style.display = 'none';
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
+            mostrarOverlay('', false);
+            if (intervaloProceso) {
+                clearInterval(intervaloProceso);
+                intervaloProceso = null;
             }
         }
 
@@ -779,10 +863,10 @@
         // ============================================
 
         console.log('🤖 Automatizador de Encuestas cargado');
+        console.log('📌 GitHub Pages | Versión 2.0');
         console.log('ℹ️ Ingresa la URL de tu encuesta y presiona "Iniciar"');
-        console.log('📌 El sistema rellenará automáticamente todos los campos');
 
-        // Cargar URL de ejemplo si existe en el input
+        // Cargar URL inicial si existe
         document.addEventListener('DOMContentLoaded', function() {
             const inputUrl = document.getElementById('urlEncuesta');
             if (inputUrl.value) {

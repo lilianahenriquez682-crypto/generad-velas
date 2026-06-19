@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuesta - Velas Artesanales</title>
+    <title>Generador Automático - Tu Encuesta</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 50px auto;
             padding: 20px;
         }
-        .form-group {
-            margin-bottom: 20px;
+        h1 { color: #8B4513; }
+        .control-panel {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select {
+        input {
             width: 100%;
             padding: 10px;
+            margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
@@ -30,140 +30,44 @@
         button {
             background-color: #8B4513;
             color: white;
-            padding: 12px 24px;
+            padding: 15px 30px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 18px;
+        }
+        button:hover { background-color: #6B3410; }
+        button:disabled { background-color: #ccc; }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
             font-size: 16px;
         }
-        button:hover {
-            background-color: #6B3410;
-        }
-        #status {
-            margin-top: 15px;
-            padding: 10px;
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .stats {
+            background: #fff3cd;
+            padding: 15px;
             border-radius: 5px;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .auto-filled {
-            background-color: #e8f5e9;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <h1>🕯️ Encuesta - Velas Artesanales</h1>
-    <p>La encuesta se rellenará automáticamente. Solo click "Enviar" al final.</p>
-
-    <form id="velas-form">
-        <div class="form-group">
-            <label for="nombre">1. Nombre completo:</label>
-            <input type="text" id="nombre" name="nombre" class="auto-filled">
-        </div>
-
-        <div class="form-group">
-            <label for="edad">2. Edad:</label>
-            <input type="number" id="edad" name="edad" class="auto-filled">
-        </div>
-
-        <div class="form-group">
-            <label for="genero">3. Género:</label>
-            <select id="genero" name="genero" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Otro">Otro</option>
-                <option value="No quiero especificar">No quiero especificar</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="precio">4. ¿Cuánto pagarías por una vela artesanal?</label>
-            <select id="precio" name="precio" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="$10-$15">$10 - $15</option>
-                <option value="$15-$20">$15 - $20</option>
-                <option value="$20-$25">$20 - $25</option>
-                <option value="$25-$30">$25 - $30</option>
-                <option value="Más de $30">Más de $30</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="frecuencia">5. ¿Con qué frecuencia compras velas?</label>
-            <select id="frecuencia" name="frecuencia" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="1 vez por mes">1 vez por mes</option>
-                <option value="2-3 veces por mes">2-3 veces por mes</option>
-                <option value="1 vez por semana">1 vez por semana</option>
-                <option value="Rara vez">Rara vez</option>
-                <option value="Nunca">Nunca</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="aroma">6. ¿Qué aroma prefieres?</label>
-            <select id="aroma" name="aroma" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="Lavanda">Lavanda</option>
-                <option value="Vainilla">Vainilla</option>
-                <option value="Coco">Coco</option>
-                <option value="Cítrico">Cítrico</option>
-                <option value="Rosas">Rosas</option>
-                <option value="Sin aroma">Sin aroma</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="tamaño">7. ¿Qué tamaño prefieres?</label>
-            <select id="tamaño" name="tamaño" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="Pequeño (50g)">Pequeño (50g)</option>
-                <option value="Mediano (100g)">Mediano (100g)</option>
-                <option value="Grande (200g)">Grande (200g)</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="uso">8. ¿Qué usas para las velas?</label>
-            <select id="uso" name="uso" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="Decoración">Decoración</option>
-                <option value="ambientador">Ambientador</option>
-                <option value="Relajación">Relajación</option>
-                <option value="Medio">Medio</option>
-                <option value="Regalo">Regalo</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="diseño">9. ¿Importa el diseño/color?</label>
-            <select id="diseño" name="diseño" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="Sí, mucho">Sí, mucho</option>
-                <option value="Sí, pero no tanto">Sí, pero no tanto</option>
-                <option value="No importa">No importa</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="online">10. ¿Comprarías online?</label>
-            <select id="online" name="online" class="auto-filled">
-                <option value="">Selecciona</option>
-                <option value="Sí, seguro">Sí, seguro</option>
-                <option value="Quizás">Quizás</option>
-                <option value="No, prefiero física">No, prefiero física</option>
-            </select>
-        </div>
-
-        <button type="submit">📤 Enviar Encuesta</button>
-    </form>
+    <h1>🚀 Generador Automático de Encuestas</h1>
+    
+    <div class="control-panel">
+        <h2>Configuración:</h2>
+        <input type="text" id="linkEncuesta" placeholder="Pega aquí el LINK de tu encuesta">
+        
+        <input type="number" id="cantidad" value="50" min="1" max="200" placeholder="Número de encuestas">
+        
+        <input type="number" id="intervalo" value="2" min="1" max="10" placeholder="Intervalo entre envíos (segundos)">
+        
+        <button id="btnGenerar">🚀Generar y Enviar Encuestas Automáticamente</button>
+    </div>
 
     <div id="status"></div>
 
@@ -172,60 +76,91 @@
             emailjs.init("miHQ7cMDRJ1p9YaB2");
         })();
 
-        // GENERAR RESPUESTA ALEATORIA
+        function generarNombre() {
+            const nombres = ["Ana", "Carlos", "María", "Juan", "Laura", "Pedro", "Sofía", "Miguel", "Lucía", "David"];
+            const apellidos = ["Gómez", "Rodríguez", "Martínez", "López", "Fernández", "Hernández", "Sánchez", "Pérez"];
+            return nombres[Math.floor(Math.random() * nombres.length)] + " " + apellidos[Math.floor(Math.random() * apellidos.length)];
+        }
+
         function generarAleatorio(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
-        // RELLENAR FORMULARIO AUTOMÁTICAMENTE
-        function rellenarAutomáticamente() {
-            // Respuestas aleatorias
-            const nombre = "Cliente " + Math.floor(Math.random() * 1000);
-            const edad = Math.floor(Math.random() * (65 - 18 + 1)) + 18;
-            const genero = generarAleatorio(["Femenino", "Masculino", "Otro", "No quiero especificar"]);
-            const precio = generarAleatorio(["$10-$15", "$15-$20", "$20-$25", "$25-$30", "Más de $30"]);
-            const frecuencia = generarAleatorio(["1 vez por mes", "2-3 veces por mes", "1 vez por semana", "Rara vez", "Nunca"]);
-            const aroma = generarAleatorio(["Lavanda", "Vainilla", "Coco", "Cítrico", "Rosas", "Sin aroma"]);
-            const tamaño = generarAleatorio(["Pequeño (50g)", "Mediano (100g)", "Grande (200g)"]);
-            const uso = generarAleatorio(["Decoración", "ambientador", "Relajación", "Medio", "Regalo"]);
-            const diseño = generarAleatorio(["Sí, mucho", "Sí, pero no tanto", "No importa"]);
-            const online = generarAleatorio(["Sí, seguro", "Quizás", "No, prefiero física"]);
+        async function generarYEnviarTodas() {
+            const link = document.getElementById('linkEncuesta').value;
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const intervalo = parseInt(document.getElementById('intervalo').value) * 1000;
+            
+            if (!link) {
+                alert("❌ Por favor pega el LINK de tu encuesta");
+                return;
+            }
 
-            // Rellenar campos
-            document.getElementById('nombre').value = nombre;
-            document.getElementById('edad').value = edad;
-            document.getElementById('genero').value = genero;
-            document.getElementById('precio').value = precio;
-            document.getElementById('frecuencia').value = frecuencia;
-            document.getElementById('aroma').value = aroma;
-            document.getElementById('tamaño').value = tamaño;
-            document.getElementById('uso').value = uso;
-            document.getElementById('diseño').value = diseño;
-            document.getElementById('online').value = online;
+            const btn = document.getElementById('btnGenerar');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            status.className = 'info';
+            status.textContent = `⏳ Abriendo link: ${link}\n⏳ Generando ${cantidad} encuestas...`;
+
+            let enviados = 0;
+            let errores = 0;
+
+            for (let i = 1; i <= cantidad; i++) {
+                // Abrir link en nuevo popup
+                const popup = window.open(link, `Encuesta ${i}`, 'width=800,height=600');
+                
+                // Esperar 3 segundos para que cargue
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Generar datos aleatorios
+                const encuesta = {
+                    nombre: generarNombre() + " #" + i,
+                    edad: Math.floor(Math.random() * (65 - 18 + 1)) + 18,
+                    genero: generarAleatorio(["Femenino", "Masculino", "Otro", "No quiero especificar"]),
+                    precio: generarAleatorio(["$10-$15", "$15-$20", "$20-$25", "$25-$30", "Más de $30"]),
+                    frecuencia: generarAleatorio(["1 vez por mes", "2-3 veces por mes", "1 vez por semana", "Rara vez", "Nunca"]),
+                    aroma: generarAleatorio(["Lavanda", "Vainilla", "Coco", "Cítrico", "Rosas", "Sin aroma"]),
+                    tamaño: generarAleatorio(["Pequeño (50g)", "Mediano (100g)", "Grande (200g)"]),
+                    uso: generarAleatorio(["Decoración", "ambientador", "Relajación", "Medio", "Regalo"]),
+                    diseño: generarAleatorio(["Sí, mucho", "Sí, pero no tanto", "No importa"]),
+                    online: generarAleatorio(["Sí, seguro", "Quizás", "No, prefiero física"])
+                };
+
+                // Enviar por EmailJS
+                try {
+                    await emailjs.send('service_xfo7y7f', 'template_qcb2q9m', encuesta);
+                    enviados++;
+                    status.className = 'success';
+                    status.textContent = `✅ Encuesta ${i}/${cantidad} enviada! Envia: ${enviados}`;
+                } catch (error) {
+                    errores++;
+                    status.className = 'error';
+                    status.textContent = `❌ Error en encuesta ${i}: ${JSON.stringify(error)}`;
+                }
+
+                popup.close();
+                
+                if (i < cantidad) {
+                    await new Promise(resolve => setTimeout(resolve, intervalo));
+                }
+            }
+
+            btn.disabled = false;
+            const stats = document.createElement('div');
+            stats.className = 'stats';
+            stats.innerHTML = `
+                <h3>📊 Resultados Final:</h3>
+                <p>✅ Enviadas: ${enviados}</p>
+                <p>❌ Errores: ${errores}</p>
+                <p>📈 Total: ${cantidad}</p>
+            `;
+            status.appendChild(stats);
+
+            alert(`✅ ¡COMPLETADO!\n\nEnviadas: ${enviados}\nErrores: ${errores}\nTotal: ${cantidad}`);
         }
 
-        // RELLENAR AUTOMÁTICAMENTE CUANDO SE ABRE LA PÁGINA
-        rellenarAutomáticamente();
-
-        // ENVIAR FORMULARIO
-        document.getElementById('velas-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const status = document.getElementById('status');
-            status.textContent = '⏳ Enviando...';
-            status.className = '';
-
-            emailjs.sendForm('service_xfo7y7f', 'template_qcb2q9m', this)
-                .then(function() {
-                    status.textContent = '✅ ¡Encuesta enviada con éxito! Gracias.';
-                    status.className = 'success';
-                    document.getElementById('velas-form').reset();
-                    rellenarAutomáticamente(); // Rellenar nueva encuesta
-                }, function(error) {
-                    status.textContent = '❌ Error: ' + JSON.stringify(error);
-                    status.className = 'error';
-                });
-        });
+        document.getElementById('btnGenerar').addEventListener('click', generarYEnviarTodas);
     </script>
 </body>
 </html>
